@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { LayoutDashboard, Briefcase, Users as UsersIcon, Globe, Sun, Moon, ExternalLink } from 'lucide-react'
+import { LayoutDashboard, Briefcase, Users as UsersIcon, Globe, Sun, Moon, ExternalLink, ArrowDownToLine } from 'lucide-react'
 import { useAppStore, type AdminView } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { useTheme } from 'next-themes'
@@ -12,11 +12,13 @@ import { AdminOverview } from '@/components/admin/admin-overview'
 import { AdminJobsManager } from '@/components/admin/admin-jobs-manager'
 import { AdminJobForm } from '@/components/admin/admin-job-form'
 import { AdminUsersManager } from '@/components/admin/admin-users-manager'
+import { AdminWithdrawalsManager } from '@/components/admin/admin-withdrawals-manager'
 
-const tabs: { key: AdminView; tKey: 'overview' | 'manageJobs' | 'manageUsers'; icon: typeof LayoutDashboard }[] = [
+const tabs: { key: AdminView; tKey: 'overview' | 'manageJobs' | 'manageUsers' | 'withdrawals'; icon: typeof LayoutDashboard }[] = [
   { key: 'admin-overview', tKey: 'overview', icon: LayoutDashboard },
   { key: 'admin-jobs', tKey: 'manageJobs', icon: Briefcase },
   { key: 'admin-users', tKey: 'manageUsers', icon: UsersIcon },
+  { key: 'admin-withdrawals', tKey: 'withdrawals', icon: ArrowDownToLine },
 ]
 
 export function AdminPanel() {
@@ -107,10 +109,13 @@ export function AdminPanel() {
 
       {/* content */}
       <main className="flex-1 mx-auto w-full max-w-5xl px-4 py-5 pb-10">
-        {adminView === 'admin-overview' && <AdminOverview />}
-        {adminView === 'admin-jobs' && <AdminJobsManager />}
-        {adminView === 'admin-users' && <AdminUsersManager />}
-        {adminView === 'admin-job-form' && <AdminJobForm />}
+        <div key={adminView} className="animate-view-in">
+          {adminView === 'admin-overview' && <AdminOverview />}
+          {adminView === 'admin-jobs' && <AdminJobsManager />}
+          {adminView === 'admin-users' && <AdminUsersManager />}
+          {adminView === 'admin-withdrawals' && <AdminWithdrawalsManager />}
+          {adminView === 'admin-job-form' && <AdminJobForm />}
+        </div>
       </main>
     </div>
   )

@@ -75,7 +75,7 @@ export function AdminOverview() {
           <p className="text-sm opacity-90 flex items-center gap-1.5">
             <Coins className="size-4" /> {t('totalEarned')} ({t('earning')})
           </p>
-          <p className="text-3xl font-bold mt-1">{formatMoney(data.stats.totalPaid, t('taka'))}</p>
+          <p className="text-3xl font-bold mt-1">{formatMoney(data.stats.totalPaid, t('taka'), lang)}</p>
         </div>
       </div>
 
@@ -133,7 +133,7 @@ export function AdminOverview() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{j.title}</p>
-                    <p className="text-xs text-muted-foreground">{formatMoney(j.reward, t('taka'))}</p>
+                    <p className="text-xs text-muted-foreground">{formatMoney(j.reward, t('taka'), lang)}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     {j.featured && <Badge variant="secondary" className="text-[9px] h-4 px-1">★</Badge>}

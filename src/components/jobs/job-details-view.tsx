@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import type { JobItem } from '@/components/jobs/job-card'
 
 export function JobDetailsView() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const jobId = useAppStore((s) => s.selectedJobId)
   const setView = useAppStore((s) => s.setView)
   const setUser = useAppStore((s) => s.setUser)
@@ -60,7 +60,7 @@ export function JobDetailsView() {
       })
     }
     toast.success(t('rewardAdded'), {
-      description: `${formatMoney(res.data!.reward, t('taka'))}`,
+      description: `${formatMoney(res.data!.reward, t('taka'), lang)}`,
     })
   }
 
@@ -102,7 +102,7 @@ export function JobDetailsView() {
           <div className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2">
             <Coins className="size-4 text-primary" />
             <span className="text-sm text-muted-foreground">{t('reward')}</span>
-            <span className="font-bold text-primary">{formatMoney(job.reward, t('taka'))}</span>
+            <span className="font-bold text-primary">{formatMoney(job.reward, t('taka'), lang)}</span>
           </div>
         </div>
       </div>

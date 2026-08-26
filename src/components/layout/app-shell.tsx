@@ -23,7 +23,7 @@ const navItems: { key: UserView; tKey: 'home' | 'jobs' | 'wallet' | 'profile'; i
 ]
 
 export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const user = useAppStore((s) => s.user)
   const view = useAppStore((s) => s.view)
   const setView = useAppStore((s) => s.setView)
@@ -79,7 +79,7 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
             <div className="flex items-center gap-1 rounded-full bg-primary/8 px-2.5 py-1">
               <Wallet className="size-3.5 text-primary" />
               <span className="text-xs font-bold text-primary">
-                {formatMoney(user?.balance || 0, t('taka'))}
+                {formatMoney(user?.balance || 0, t('taka'), lang)}
               </span>
             </div>
             <Button
@@ -121,11 +121,13 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
 
       {/* content */}
       <main className="flex-1 mx-auto w-full max-w-2xl px-4 pt-4 pb-28 md:pb-10">
-        {view === 'dashboard' && <DashboardView />}
-        {view === 'jobs' && <JobsListView />}
-        {view === 'job-details' && <JobDetailsView />}
-        {view === 'wallet' && <WalletView />}
-        {view === 'profile' && <ProfileView />}
+        <div key={view} className="animate-view-in">
+          {view === 'dashboard' && <DashboardView />}
+          {view === 'jobs' && <JobsListView />}
+          {view === 'job-details' && <JobDetailsView />}
+          {view === 'wallet' && <WalletView />}
+          {view === 'profile' && <ProfileView />}
+        </div>
       </main>
 
       {/* mobile bottom nav */}

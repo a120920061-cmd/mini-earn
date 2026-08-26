@@ -113,8 +113,8 @@ export function AdminUsersManager() {
                     <p className="flex items-center gap-1.5 truncate"><Mail className="size-3" />{u.email}</p>
                   </div>
                   <div className="flex items-center gap-3 mt-2 text-xs">
-                    <span className="font-bold text-primary">{formatMoney(u.balance, t('taka'))}</span>
-                    <span className="text-muted-foreground">· {t('totalEarned')}: {formatMoney(u.totalEarned, t('taka'))}</span>
+                    <span className="font-bold text-primary">{formatMoney(u.balance, t('taka'), lang)}</span>
+                    <span className="text-muted-foreground">· {t('totalEarned')}: {formatMoney(u.totalEarned, t('taka'), lang)}</span>
                     <span className="text-muted-foreground">· {timeAgo(u.createdAt, lang)}</span>
                   </div>
                 </div>

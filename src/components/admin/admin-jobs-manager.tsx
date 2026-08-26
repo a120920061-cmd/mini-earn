@@ -135,7 +135,7 @@ export function AdminJobsManager() {
                   </div>
                   <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{job.description}</p>
                   <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                    <span className="font-bold text-primary">{formatMoney(job.reward, t('taka'))}</span>
+                    <span className="font-bold text-primary">{formatMoney(job.reward, t('taka'), lang)}</span>
                     <span>·</span>
                     <span className="capitalize">{job.category}</span>
                     <span>·</span>

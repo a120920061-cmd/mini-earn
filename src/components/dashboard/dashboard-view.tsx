@@ -7,7 +7,8 @@ import { Card } from '@/components/ui/card'
 import { JobCard, type JobItem } from '@/components/jobs/job-card'
 import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
-import { api, formatMoney } from '@/lib/api'
+import { api, formatMoney, formatNumber } from '@/lib/api'
+import { WeeklyEarningsChart } from '@/components/dashboard/weekly-chart'
 
 type DashData = {
   user: { name: string; balance: number; totalEarned: number }
@@ -73,12 +74,12 @@ export function DashboardView() {
             <Sparkles className="size-4 opacity-80" />
           </div>
           <p className="text-4xl font-bold mt-2 tracking-tight">
-            {formatMoney(data.user.balance, t('taka'))}
+            {formatMoney(data.user.balance, t('taka'), lang)}
           </p>
           <div className="flex items-center gap-4 mt-4 text-sm">
             <span className="flex items-center gap-1.5 opacity-95">
               <TrendingUp className="size-4" />
-              {t('totalEarned')}: <b>{formatMoney(data.user.totalEarned, t('taka'))}</b>
+              {t('totalEarned')}: <b>{formatMoney(data.user.totalEarned, t('taka'), lang)}</b>
             </span>
           </div>
         </div>
@@ -88,15 +89,18 @@ export function DashboardView() {
       <div className="grid grid-cols-2 gap-3">
         <StatCard
           icon={<CheckCircle2 className="size-5" />}
-          value={String(data.stats.completedJobs)}
+          value={formatNumber(data.stats.completedJobs, lang)}
           label={t('completedJobs')}
         />
         <StatCard
           icon={<Briefcase />}
-          value={String(data.stats.availableJobs)}
+          value={formatNumber(data.stats.availableJobs, lang)}
           label={t('availableJobs')}
         />
       </div>
+
+      {/* weekly earnings chart */}
+      <WeeklyEarningsChart />
 
       {/* available jobs */}
       <div className="space-y-3">

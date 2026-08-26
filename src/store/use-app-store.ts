@@ -9,7 +9,7 @@ export type UserView =
   | 'profile'
   | 'job-details'
 
-export type AdminView = 'admin-overview' | 'admin-jobs' | 'admin-users' | 'admin-job-form'
+export type AdminView = 'admin-overview' | 'admin-jobs' | 'admin-users' | 'admin-job-form' | 'admin-withdrawals'
 
 export type AppUser = {
   id: string

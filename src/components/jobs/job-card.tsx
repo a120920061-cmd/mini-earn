@@ -80,7 +80,7 @@ export function JobCard({
           <div className="flex items-center justify-between gap-2 mt-3">
             <div className="flex items-baseline gap-1">
               <span className="text-xs text-muted-foreground">{t('reward')}:</span>
-              <span className="font-bold text-primary text-lg">{formatMoney(job.reward, t('taka'))}</span>
+              <span className="font-bold text-primary text-lg">{formatMoney(job.reward, t('taka'), lang)}</span>
             </div>
             {done ? (
               <Badge variant="outline" className="gap-1 text-emerald-600 border-emerald-500/30">

@@ -7,15 +7,21 @@ export async function GET() {
     const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
-    const transactions = await db.transaction.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    })
-
-    const completedCount = await db.submission.count({
-      where: { userId: user.id, status: 'completed' },
-    })
+    const [transactions, withdrawals, completedCount] = await Promise.all([
+      db.transaction.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      }),
+      db.withdrawal.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+      db.submission.count({
+        where: { userId: user.id, status: 'completed' },
+      }),
+    ])
 
     return NextResponse.json({
       balance: user.balance,
@@ -27,6 +33,15 @@ export async function GET() {
         type: t.type,
         description: t.description,
         createdAt: t.createdAt.toISOString(),
+      })),
+      withdrawals: withdrawals.map((w) => ({
+        id: w.id,
+        amount: Number(w.amount),
+        method: w.method,
+        account: w.account,
+        status: w.status,
+        note: w.note,
+        createdAt: w.createdAt.toISOString(),
       })),
     })
   } catch (e) {

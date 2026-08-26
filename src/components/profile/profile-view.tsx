@@ -15,24 +15,41 @@ import {
   ShieldCheck,
   ShieldOff,
   Languages,
+  Pencil,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { api, formatMoney } from '@/lib/api'
 import { toast } from 'sonner'
 import { useTheme } from 'next-themes'
+import { dict } from '@/lib/i18n'
 
 export function ProfileView() {
   const { t, lang } = useT()
   const user = useAppStore((s) => s.user)
+  const setUser = useAppStore((s) => s.setUser)
   const curLang = useAppStore((s) => s.lang)
   const setLang = useAppStore((s) => s.setLang)
   const logoutLocal = useAppStore((s) => s.logoutLocal)
   const { theme, setTheme } = useTheme()
   const [loggingOut, setLoggingOut] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editName, setEditName] = useState(user?.name || '')
+  const [editLoading, setEditLoading] = useState(false)
+  const d = dict[curLang]
 
   async function onLogout() {
     setLoggingOut(true)
@@ -40,6 +57,29 @@ export function ProfileView() {
     setLoggingOut(false)
     logoutLocal()
     toast.success(t('logoutSuccess'))
+  }
+
+  async function onEditSave(e: React.FormEvent) {
+    e.preventDefault()
+    const name = editName.trim()
+    if (name.length < 2) {
+      toast.error(d.minName)
+      return
+    }
+    setEditLoading(true)
+    const res = await api<{ user: any }>('/api/profile', {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    })
+    setEditLoading(false)
+    if (res.ok && res.data?.user) {
+      setUser(res.data.user)
+      toast.success(t('profileUpdated'))
+      setEditOpen(false)
+    } else {
+      const key = (res.data?.error || 'server_error') as keyof typeof dict['en']
+      toast.error(d[key] || 'Error')
+    }
   }
 
   if (!user) return null
@@ -55,7 +95,18 @@ export function ProfileView() {
             {user.name.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="font-semibold text-lg truncate">{user.name}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold text-lg truncate">{user.name}</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={() => { setEditName(user.name); setEditOpen(true) }}
+                aria-label={t('editProfile')}
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+            </div>
             <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
             <div className="flex items-center gap-1.5 mt-1">
               {user.enabled ? (
@@ -80,12 +131,12 @@ export function ProfileView() {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{t('balance')}</p>
-            <p className="font-bold text-lg">{formatMoney(user.balance, t('taka'))}</p>
+            <p className="font-bold text-lg">{formatMoney(user.balance, t('taka'), lang)}</p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-xs text-muted-foreground">{t('totalEarned')}</p>
-          <p className="font-semibold text-sm">{formatMoney(user.totalEarned, t('taka'))}</p>
+          <p className="font-semibold text-sm">{formatMoney(user.totalEarned, t('taka'), lang)}</p>
         </div>
       </div>
 
@@ -156,6 +207,41 @@ export function ProfileView() {
       <p className="text-center text-xs text-muted-foreground pt-2">
         {t('appName')} · v1.0
       </p>
+
+      {/* edit profile dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="size-8 rounded-lg bg-primary/10 text-primary grid place-items-center">
+                <Pencil className="size-4" />
+              </div>
+              {t('editProfile')}
+            </DialogTitle>
+            <DialogDescription>{t('editName')}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={onEditSave} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{t('name')}</Label>
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder={curLang === 'bn' ? 'আপনার নাম' : 'Your name'}
+                className="h-11"
+                autoFocus
+              />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setEditOpen(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="submit" className="flex-1" disabled={editLoading}>
+                {editLoading ? <Loader2 className="size-4 animate-spin" /> : t('save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
