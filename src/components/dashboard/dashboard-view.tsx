@@ -9,6 +9,7 @@ import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { api, formatMoney, formatNumber } from '@/lib/api'
 import { WeeklyEarningsChart } from '@/components/dashboard/weekly-chart'
+import { TopEarnersPreview } from '@/components/dashboard/top-earners-preview'
 
 type DashData = {
   user: { name: string; balance: number; totalEarned: number }
@@ -101,6 +102,9 @@ export function DashboardView() {
 
       {/* weekly earnings chart */}
       <WeeklyEarningsChart />
+
+      {/* top earners preview */}
+      <TopEarnersPreview />
 
       {/* available jobs */}
       <div className="space-y-3">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { LayoutDashboard, Briefcase, Users as UsersIcon, Globe, Sun, Moon, ExternalLink, ArrowDownToLine } from 'lucide-react'
+import { LayoutDashboard, Briefcase, Users as UsersIcon, Globe, Sun, Moon, ExternalLink, ArrowDownToLine, Megaphone } from 'lucide-react'
 import { useAppStore, type AdminView } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { useTheme } from 'next-themes'
@@ -13,6 +13,8 @@ import { AdminJobsManager } from '@/components/admin/admin-jobs-manager'
 import { AdminJobForm } from '@/components/admin/admin-job-form'
 import { AdminUsersManager } from '@/components/admin/admin-users-manager'
 import { AdminWithdrawalsManager } from '@/components/admin/admin-withdrawals-manager'
+import { BroadcastDialog } from '@/components/admin/broadcast-dialog'
+import { useState } from 'react'
 
 const tabs: { key: AdminView; tKey: 'overview' | 'manageJobs' | 'manageUsers' | 'withdrawals'; icon: typeof LayoutDashboard }[] = [
   { key: 'admin-overview', tKey: 'overview', icon: LayoutDashboard },
@@ -36,6 +38,7 @@ export function AdminPanel() {
 
   // when showing the job form, no tab is "active" — treat as Jobs context
   const activeTab: AdminView = adminView === 'admin-job-form' ? 'admin-jobs' : adminView
+  const [broadcastOpen, setBroadcastOpen] = useState(false)
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -53,6 +56,15 @@ export function AdminPanel() {
           </div>
 
           <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBroadcastOpen(true)}
+              className="h-9"
+            >
+              <Megaphone className="size-4" />
+              <span className="hidden sm:inline">{t('broadcast')}</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -117,6 +129,8 @@ export function AdminPanel() {
           {adminView === 'admin-job-form' && <AdminJobForm />}
         </div>
       </main>
+
+      <BroadcastDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />
     </div>
   )
 }

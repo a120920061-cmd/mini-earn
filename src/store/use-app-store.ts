@@ -8,6 +8,7 @@ export type UserView =
   | 'wallet'
   | 'profile'
   | 'job-details'
+  | 'leaderboard'
 
 export type AdminView = 'admin-overview' | 'admin-jobs' | 'admin-users' | 'admin-job-form' | 'admin-withdrawals'
 

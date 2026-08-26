@@ -12,6 +12,7 @@ import { JobsListView } from '@/components/jobs/jobs-list-view'
 import { JobDetailsView } from '@/components/jobs/job-details-view'
 import { WalletView } from '@/components/wallet/wallet-view'
 import { ProfileView } from '@/components/profile/profile-view'
+import { LeaderboardView } from '@/components/leaderboard/leaderboard-view'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { NotificationBell } from '@/components/layout/notification-bell'
 import { Button } from '@/components/ui/button'
@@ -129,6 +130,7 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
           {view === 'job-details' && <JobDetailsView />}
           {view === 'wallet' && <WalletView />}
           {view === 'profile' && <ProfileView />}
+          {view === 'leaderboard' && <LeaderboardView />}
         </div>
       </main>
 

@@ -109,3 +109,38 @@ Stage Summary:
 - **Styling improvements**: Richer empty states with icons + CTAs, notification bell with pulsing badge + type-colored icons, dual summary cards on admin overview, tooltip titles on admin job action buttons.
 - **Architecture notes**: Notifications are fire-and-forget (failures never block main flows). NotificationBell polls every 30s and refreshes on open. The versioned db cache (`prisma_v3`) prevents the stale-PrismaClient class of bugs seen in round 2.
 - **Recommended next steps**: real-time push (WebSocket/SSE) instead of polling, notification preferences/settings, admin broadcast notifications, job proof upload (image/text), withdrawal method-specific account validation, email notifications, leaderboard/rankings.
+
+---
+Task ID: 4
+Agent: main (Z.ai Code) — recurring web dev review (round 4)
+Task: QA via agent-browser, then add gamification (leaderboard), admin broadcast announcements, share/invite card, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean, no errors. Identified engagement gap: no leaderboard/gamification, no admin broadcast, no share feature.
+- **Leaderboard** (new feature — gamification):
+  - API `GET /api/leaderboard?period=week|all`: top 10 earners + current user's rank. Weekly uses transaction groupBy (last 7 days earnings); all-time uses totalEarned. Computes user's rank by counting higher earners.
+  - `LeaderboardView` component: trophy header, week/all-time toggle, **podium for top 3** (reordered 2nd-1st-3rd, gradient avatars with crown on #1, rank badges), ranked list 4-10 with "আপনি" (You) badge on current user, and a gradient "Your Rank" card with encouragement when unranked.
+  - Added `leaderboard` to UserView store type + app-shell router.
+- **Dashboard top-earners preview**: `TopEarnersPreview` component — 3-up grid of weekly top earners with rank-colored avatars, crown on #1, "See All" → leaderboard. Skeleton loading state. Hidden when no earners.
+- **Admin broadcast** (new feature — mass communication):
+  - API `POST /api/admin/broadcast` (admin): validates title/body, fetches all enabled non-admin users, creates notifications in batches of 100 via `createMany` (scales). Returns sent count.
+  - `BroadcastDialog` component: title input + message textarea (400 char counter) + recipients badge (All Users). Wired into admin panel header as a "Broadcast" button (Megaphone icon).
+- **Share/invite card** (new feature — viral growth, lightweight, no DB tracking):
+  - `ShareCard` component on profile: gradient header with gift icon, referral link display (origin/?ref=username), copy button (clipboard API + execCommand fallback) with copied-check state, native share button (Web Share API with fallback to copy).
+- **i18n**: added ~25 new keys (leaderboard, podium terms, share, broadcast, announcement) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- Leaderboard week API: Test User rank 1 (৳27, isMe:true), Notif Test rank 2 (৳2), myRank:{rank:1,totalEarned:27} ✓
+- Leaderboard all API: ranked earners returned ✓
+- Broadcast API: sent:5, user received "Test Broadcast" notification ✓
+- Browser: dashboard "শীর্ষ আয়কারী" preview present ✓; See All → leaderboard view with trophy + podium + "আপনার র‍্যাঙ্ক" card (rank 1, ৳২৭.০০) ✓; All Time toggle works ✓
+- Profile share card present ("অ্যাপ শেয়ার করুন"), copy link works ✓
+- Admin: broadcast button in header, dialog opens with title + message + recipients + Cancel/Broadcast buttons ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-4 features implemented, verified end-to-end, lint clean.
+- **New features**: Leaderboard (weekly + all-time, podium, your-rank card), dashboard top-earners preview, admin broadcast announcements (batch notification creation), share/invite card with copy + native share.
+- **Styling**: Trophy podium with gradient avatars + crown, rank badges with Bangla numerals, gradient share card, broadcast dialog with char counter + recipients badge.
+- **Architecture**: Leaderboard rank computed via count-of-higher query (simple, works on SQLite). Broadcast uses batched createMany (100/batch) for scalability. Share link is stateless (no DB tracking) to keep it lightweight per the "minimal" project ethos.
+- **Recommended next steps**: referral tracking (reward referrer when referee completes first job), weekly leaderboard reset cron, leaderboard privacy toggle, broadcast templates, push notifications (PWA), achievement badges/streaks, admin leaderboard management.

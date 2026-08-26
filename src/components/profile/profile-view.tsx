@@ -36,6 +36,7 @@ import { api, formatMoney } from '@/lib/api'
 import { toast } from 'sonner'
 import { useTheme } from 'next-themes'
 import { dict } from '@/lib/i18n'
+import { ShareCard } from '@/components/profile/share-card'
 
 export function ProfileView() {
   const { t, lang } = useT()
@@ -139,6 +140,9 @@ export function ProfileView() {
           <p className="font-semibold text-sm">{formatMoney(user.totalEarned, t('taka'), lang)}</p>
         </div>
       </div>
+
+      {/* share / invite */}
+      <ShareCard />
 
       {/* account info */}
       <div>
