@@ -1,0 +1,87 @@
+// Mini Jobs & Earn — Prisma schema
+// SQLite datasource (see .env DATABASE_URL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  balance      Float    @default(0)
+  totalEarned  Float    @default(0)
+  isAdmin      Boolean  @default(false)
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  submissions  Submission[]
+  transactions Transaction[]
+  sessions     Session[]
+}
+
+model Job {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  instructions String
+  reward       Float    @default(0)
+  link         String
+  category     String   @default("general")
+  featured     Boolean  @default(false)
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  submissions  Submission[]
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  jobId     String
+  userId    String
+  status    String   @default("completed") // completed | rejected
+  reward    Float
+  proof     String?
+  createdAt DateTime @default(now())
+
+  job       Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([jobId])
+}
+
+model Transaction {
+  id           String   @id @default(cuid())
+  userId       String
+  amount       Float
+  type         String   // earning | withdrawal | adjustment
+  description  String
+  submissionId String?
+  createdAt    DateTime @default(now())
+
+  user         User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
