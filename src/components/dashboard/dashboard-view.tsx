@@ -24,6 +24,7 @@ export function DashboardView() {
   const openJob = useAppStore((s) => s.openJob)
   const setView = useAppStore((s) => s.setView)
   const setUser = useAppStore((s) => s.setUser)
+  const refreshKey = useAppStore((s) => s.refreshKey)
   const [data, setData] = useState<DashData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -47,7 +48,7 @@ export function DashboardView() {
       setLoading(false)
     })()
     return () => { alive = false }
-  }, [])
+  }, [refreshKey])
 
   if (loading || !data) {
     return (

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { api, formatMoney, formatNumber, timeAgo } from '@/lib/api'
+import { AdminAnalytics } from '@/components/admin/admin-analytics'
 
 type Stats = {
   totalUsers: number
@@ -114,6 +115,9 @@ export function AdminOverview() {
           )}
         </div>
       </div>
+
+      {/* analytics charts */}
+      <AdminAnalytics />
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* recent users */}

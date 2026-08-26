@@ -47,6 +47,7 @@ export function WalletView() {
   const { t, lang } = useT()
   const setUser = useAppStore((s) => s.setUser)
   const user = useAppStore((s) => s.user)
+  const refreshKey = useAppStore((s) => s.refreshKey)
   const [data, setData] = useState<WalletData | null>(null)
   const [showWithdraw, setShowWithdraw] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -76,7 +77,7 @@ export function WalletView() {
       setLoading(false)
     })()
     return () => { alive = false }
-  }, [])
+  }, [refreshKey])
 
   if (loading || !data) {
     return <WalletSkeleton t={t} />

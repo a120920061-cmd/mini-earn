@@ -53,6 +53,10 @@ interface AppState {
   editJob: (id: string | null) => void
   setAdminAsUser: (b: boolean) => void
 
+  // refresh signal — incremented to trigger view reloads (pull-to-refresh)
+  refreshKey: number
+  triggerRefresh: () => void
+
   resetNav: () => void
 }
 
@@ -81,6 +85,9 @@ export const useAppStore = create<AppState>()(
       openJob: (id) => set({ selectedJobId: id, view: 'job-details' }),
       editJob: (id) => set({ editingJobId: id, adminView: 'admin-job-form' }),
       setAdminAsUser: (b) => set({ adminAsUser: b, view: 'dashboard' }),
+
+      refreshKey: 0,
+      triggerRefresh: () => set({ refreshKey: get().refreshKey + 1 }),
 
       resetNav: () => set({ view: 'dashboard', adminView: 'admin-overview', selectedJobId: null, editingJobId: null, adminAsUser: false }),
     }),

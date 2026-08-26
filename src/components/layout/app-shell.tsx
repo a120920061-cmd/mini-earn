@@ -15,6 +15,7 @@ import { ProfileView } from '@/components/profile/profile-view'
 import { LeaderboardView } from '@/components/leaderboard/leaderboard-view'
 import { SettingsView } from '@/components/settings/settings-view'
 import { BottomNav } from '@/components/layout/bottom-nav'
+import { PullToRefresh } from '@/components/layout/pull-to-refresh'
 import { NotificationBell } from '@/components/layout/notification-bell'
 import { Button } from '@/components/ui/button'
 
@@ -33,6 +34,7 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
   const curLang = useAppStore((s) => s.lang)
   const setLang = useAppStore((s) => s.setLang)
   const setAdminAsUser = useAppStore((s) => s.setAdminAsUser)
+  const triggerRefresh = useAppStore((s) => s.triggerRefresh)
   const { theme, setTheme } = useTheme()
 
   // sync html lang attribute
@@ -43,7 +45,8 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
   const activeTab: UserView = view === 'job-details' ? 'jobs' : view
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <PullToRefresh onRefresh={() => triggerRefresh()}>
+      <div className="min-h-screen flex flex-col bg-background">
       {/* header */}
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between gap-2">
@@ -138,6 +141,7 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
 
       {/* mobile bottom nav */}
       <BottomNav />
-    </div>
+      </div>
+    </PullToRefresh>
   )
 }

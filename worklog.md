@@ -258,3 +258,39 @@ Stage Summary:
 - **Styling**: Category cards with colored icons + hover lift + arrow, submissions cards with status icons + category badges, balance dialog with green/red mode toggle.
 - **Architecture**: Submissions API does in-memory q-filtering (after Prisma include) since SQLite text search across relations is awkward — simple and works for 200-record max. Balance adjust is atomic via $transaction (user update + transaction record). Balance adjust blocked for admin users + prevents negative balances.
 - **Recommended next steps**: submission rejection flow (admin can reject + refund), CSV export of submissions/withdrawals, job proof upload, PWA offline, referral tracking, admin audit log, scheduled job publishing.
+
+---
+Task ID: 8
+Agent: main (Z.ai Code) — recurring web dev review (round 8)
+Task: QA via agent-browser, add PWA support (manifest + service worker + icons), pull-to-refresh, admin analytics charts, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean, no errors. Identified gaps: no PWA/install support, no pull-to-refresh on mobile, admin overview lacks visual analytics.
+- **PWA support** (new feature — installable + offline shell):
+  - Generated a custom emerald-green app icon via image-generation skill (1024x1024 wallet coin emblem), resized to 192/512/180/32 PNGs via sharp.
+  - `public/manifest.json`: name/short_name (Bn+En), standalone display, portrait orientation, theme_color #10b981, icons (192/512 maskable), app shortcuts (Jobs/Wallet).
+  - `public/sw.js` service worker: precaches app shell, network-first for navigation (fresh UI + offline fallback), cache-first for static assets, skips API requests.
+  - `ServiceWorkerRegister` component (registers SW in production only, after load).
+  - Updated `layout.tsx` metadata: manifest link, appleWebApp config, icon set (32/192/apple-touch). Viewport themeColor.
+- **Pull-to-refresh** (new feature — mobile native-feel refresh):
+  - `usePullToRefresh` hook: tracks touch start/move/end, dampened pull resistance, threshold 70px, only activates at scroll top.
+  - `PullToRefresh` wrapper component: fixed top indicator with RefreshCw icon (rotates with pull progress) → Loader2 spinner when refreshing. Wired into AppShell wrapping the whole page.
+  - Added `refreshKey` + `triggerRefresh` to Zustand store. Dashboard/Jobs/Wallet views now depend on refreshKey in their useEffect deps — pull triggers a re-fetch.
+- **Admin analytics charts** (new feature — visual insights):
+  - API `GET /api/admin/analytics` (admin): 14-day earnings trend (per-day amounts) + category distribution (submission counts per category) + totals.
+  - `AdminAnalytics` component: 2-col grid — earnings trend bar chart (14 days, today highlighted, hover tooltips, Bangla day labels, total) + category distribution horizontal bars (colored per category, count + percentage). Skeleton loading.
+  - Added to admin overview between the dual summary cards and the recent users/jobs grid.
+
+E2E Verification (curl + agent-browser):
+- manifest.json HTTP 200, icon-192.png HTTP 200, sw.js HTTP 200 ✓
+- Admin analytics API: returns 14-day earningsTrend + categories ✓
+- Browser: manifest link present in head ✓
+- Admin overview: "সাপ্তাহিক আয় 14 দিন ৳৩৫.০০" + 14-day bar chart + "ক্যাটাগরি ১০ সাবমিশন" with Visit ৬, Social ১, Media ১, Download ১, Survey ₁ ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-8 features implemented, verified end-to-end, lint clean.
+- **New features**: PWA support (manifest + service worker + generated emerald app icon + apple touch icon), pull-to-refresh (mobile touch hook + indicator + store refreshKey signal), admin analytics charts (14-day earnings trend + category distribution).
+- **Styling**: Custom AI-generated emerald app icon, pull indicator with rotating RefreshCw → spinner, analytics bar chart with today highlight + hover tooltips, category bars with per-category colors.
+- **Architecture**: SW only registers in production (avoids dev caching issues). Pull-to-refresh uses a global refreshKey counter in the store — views opt in by depending on it. Analytics computed via Prisma groupBy + in-memory bucketing (SQLite-friendly). Image generation via z-ai-web-dev-sdk CLI.
+- **Recommended next steps**: real-time push notifications via SW, offline job queue, admin CSV export, job proof upload, referral tracking, weekly digest email, PWA install prompt banner.

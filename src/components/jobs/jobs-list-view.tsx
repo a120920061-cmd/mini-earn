@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 export function JobsListView() {
   const { t, lang } = useT()
   const openJob = useAppStore((s) => s.openJob)
+  const refreshKey = useAppStore((s) => s.refreshKey)
   const [jobs, setJobs] = useState<JobItem[] | null>(null)
   const [q, setQ] = useState('')
   const [cat, setCat] = useState<string>('all')
@@ -28,7 +29,7 @@ export function JobsListView() {
       else setJobs([])
     })()
     return () => { alive = false }
-  }, [])
+  }, [refreshKey])
 
   const cats = Array.from(new Set((jobs || []).map((j) => j.category || 'general')))
   const filtered = (jobs || []).filter((j) => {
