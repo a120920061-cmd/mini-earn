@@ -304,6 +304,27 @@ export const dict = {
     exportUsers: 'ইউজার লিস্ট',
     exportSubmissions: 'সাবমিশন লিস্ট',
     exportWithdrawals: 'উত্তোলন লিস্ট',
+    // change password
+    changePassword: 'পাসওয়ার্ড পরিবর্তন',
+    changePasswordDesc: 'নিরাপত্তার জন্য নিয়মিত পাসওয়ার্ড আপডেট করুন',
+    currentPassword: 'বর্তমান পাসওয়ার্ড',
+    newPassword: 'নতুন পাসওয়ার্ড',
+    confirmPassword: 'পাসওয়ার্ড নিশ্চিত করুন',
+    passwordChanged: 'পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে',
+    samePassword: 'নতুন পাসওয়ার্ড বর্তমান পাসওয়ার্ডের সমান হতে পারবে না',
+    passwordsDoNotMatch: 'পাসওয়ার্ড মিলছে না',
+    passwordStrength: 'পাসওয়ার্ড শক্তি',
+    weak: 'দুর্বল',
+    medium: 'মাঝারি',
+    strong: 'শক্তিশালী',
+    // activity feed
+    recentActivity: 'সাম্প্রতিক কার্যকলাপ',
+    recentActivityDesc: 'আপনার সর্বশেষ আয় ও কার্যকলাপ',
+    noRecentActivity: 'এখনও কোনো কার্যকলাপ নেই',
+    // admin streak reset
+    resetStreak: 'স্ট্রিক রিসেট',
+    resetStreakDesc: 'ইউজারের বর্তমান স্ট্রিক শূন্যে রিসেট করুন',
+    streakReset: 'স্ট্রিক রিসেট হয়েছে',
   },
   en: {
     appName: 'Mini Earn',
@@ -599,6 +620,27 @@ export const dict = {
     exportUsers: 'Users List',
     exportSubmissions: 'Submissions List',
     exportWithdrawals: 'Withdrawals List',
+    // change password
+    changePassword: 'Change Password',
+    changePasswordDesc: 'Update your password regularly for security',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmPassword: 'Confirm Password',
+    passwordChanged: 'Password changed successfully',
+    samePassword: 'New password cannot be the same as current',
+    passwordsDoNotMatch: 'Passwords do not match',
+    passwordStrength: 'Password strength',
+    weak: 'Weak',
+    medium: 'Medium',
+    strong: 'Strong',
+    // activity feed
+    recentActivity: 'Recent Activity',
+    recentActivityDesc: 'Your latest earnings and activity',
+    noRecentActivity: 'No recent activity yet',
+    // admin streak reset
+    resetStreak: 'Reset Streak',
+    resetStreakDesc: 'Reset the user\'s current streak to zero',
+    streakReset: 'Streak reset',
   },
 } as const
 

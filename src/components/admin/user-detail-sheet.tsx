@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useT } from '@/hooks/use-t'
 import { api, formatMoney, formatNumber, timeAgo } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import { BalanceAdjustDialog } from '@/components/admin/balance-adjust-dialog'
 
 type BadgeItem = {
@@ -136,16 +137,36 @@ export function UserDetailSheet({
               <Stat icon={<Award className="size-4" />} value={`${formatNumber(data.stats.unlockedBadges, lang)}/${formatNumber(data.stats.totalBadges, lang)}`} label={t('badges')} color="text-purple-600" />
             </div>
 
-            {/* adjust balance button (non-admin users only) */}
+            {/* adjust balance + reset streak buttons (non-admin users only) */}
             {!data.user.isAdmin && (
-              <Button
-                variant="outline"
-                className="w-full h-10"
-                onClick={() => setBalOpen(true)}
-              >
-                <Pencil className="size-4" />
-                {t('adjustBalance')}
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  className="h-10"
+                  onClick={() => setBalOpen(true)}
+                >
+                  <Pencil className="size-4" />
+                  {t('adjustBalance')}
+                </Button>
+                {data.user.streak > 0 && (
+                  <Button
+                    variant="outline"
+                    className="h-10 text-destructive hover:text-destructive hover:bg-destructive/5 border-destructive/30"
+                    onClick={async () => {
+                      const res = await api(`/api/admin/users/${data.user.id}/reset-streak`, { method: 'POST' })
+                      if (res.ok) {
+                        toast.success(t('streakReset'))
+                        setData((prev) => prev ? { ...prev, user: { ...prev.user, streak: 0 } } : prev)
+                      } else {
+                        toast.error('Failed')
+                      }
+                    }}
+                  >
+                    <Flame className="size-4" />
+                    {t('resetStreak')}
+                  </Button>
+                )}
+              </div>
             )}
 
             {/* badges */}

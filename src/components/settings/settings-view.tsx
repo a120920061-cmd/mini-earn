@@ -14,6 +14,7 @@ import {
   LogOut,
   ShieldCheck,
   ShieldOff,
+  KeyRound,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -33,6 +34,7 @@ import { useT } from '@/hooks/use-t'
 import { useTheme } from 'next-themes'
 import { api } from '@/lib/api'
 import { toast } from 'sonner'
+import { ChangePasswordDialog } from '@/components/settings/change-password-dialog'
 
 export function SettingsView() {
   const { t } = useT()
@@ -44,6 +46,7 @@ export function SettingsView() {
   const { theme, setTheme } = useTheme()
   const [clearingNotif, setClearingNotif] = useState(false)
   const [clearOpen, setClearOpen] = useState(false)
+  const [pwOpen, setPwOpen] = useState(false)
 
   async function clearNotifications() {
     setClearingNotif(true)
@@ -129,6 +132,23 @@ export function SettingsView() {
         </Row>
       </Section>
 
+      {/* Security */}
+      <Section title={t('changePassword')}>
+        <Row
+          icon={<KeyRound className="size-4" />}
+          label={t('changePassword')}
+          desc={t('changePasswordDesc')}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPwOpen(true)}
+          >
+            <KeyRound className="size-4" />
+          </Button>
+        </Row>
+      </Section>
+
       {/* Account status */}
       {user && (
         <Section title={t('accountActions')}>
@@ -197,6 +217,9 @@ export function SettingsView() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* change password dialog */}
+      <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} />
     </div>
   )
 }

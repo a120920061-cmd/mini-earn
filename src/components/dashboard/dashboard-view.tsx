@@ -11,6 +11,7 @@ import { api, formatMoney, formatNumber } from '@/lib/api'
 import { WeeklyEarningsChart } from '@/components/dashboard/weekly-chart'
 import { TopEarnersPreview } from '@/components/dashboard/top-earners-preview'
 import { StreakCard } from '@/components/dashboard/streak-card'
+import { ActivityFeed } from '@/components/dashboard/activity-feed'
 
 type DashData = {
   user: { name: string; balance: number; totalEarned: number; streak: number; bestStreak: number; lastJobAt: string | null }
@@ -113,6 +114,9 @@ export function DashboardView() {
 
       {/* top earners preview */}
       <TopEarnersPreview />
+
+      {/* recent activity feed */}
+      <ActivityFeed />
 
       {/* available jobs */}
       <div className="space-y-3">

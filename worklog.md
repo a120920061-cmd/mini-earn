@@ -329,3 +329,39 @@ Stage Summary:
 - **Styling**: Sort dropdown with ArrowDownUp icon, onboarding sheet with Rocket header + numbered colored step icons, export buttons card with 3 icon-labeled buttons.
 - **Architecture**: Onboarding uses localStorage flag (no DB) — purely client-side, fires once. CSV export builds strings server-side with RFC-4180-style escaping. Export download uses hidden anchor element to preserve session cookies (no fetch blob needed).
 - **Recommended next steps**: real-time push via SW, offline job queue, job proof upload, referral tracking with reward, weekly digest email, admin audit log, scheduled job publishing, PWA install prompt banner.
+
+---
+Task ID: 10
+Agent: main (Z.ai Code) — recurring web dev review (round 10)
+Task: QA via agent-browser, add change password, dashboard activity feed, admin streak reset, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean, no errors. Identified gap: no change password feature (security), no activity timeline on dashboard, no admin streak reset.
+- **Change password** (new feature — security):
+  - API `POST /api/auth/change-password`: validates current password (verifyPassword), enforces new ≥6 chars, blocks same-as-current. Uses hashPassword for the new hash.
+  - `ChangePasswordDialog` component: 3 fields (current/new/confirm) with show/hide toggles, **password strength meter** (3-bar: weak/medium/strong based on length + case + digits + symbols), confirm-match check icon, validation toasts.
+  - Added a "Security" section to SettingsView with a KeyRound button that opens the dialog.
+- **Dashboard activity feed** (new feature — engagement):
+  - API `GET /api/dashboard/activity`: merges last 5 transactions + last 3 withdrawals, sorts by date, returns top 6 with type/title/amount/createdAt.
+  - `ActivityFeed` component: card with Activity icon header, timeline list with type-colored icons (earning=emerald, withdrawal=amber/destructive, adjustment=sky), title + timeAgo + signed amount. Skeleton loading + empty state. Responds to refreshKey (pull-to-refresh).
+  - Added to dashboard between TopEarnersPreview and Available Jobs.
+- **Admin streak reset** (new feature — admin control):
+  - API `POST /api/admin/users/[id]/reset-streak` (admin): validates non-admin target, resets streak to 0 (keeps bestStreak).
+  - Added a "Reset Streak" button (Flame icon, destructive styling) to UserDetailSheet — only shows when streak > 0. Sits in a 2-col grid alongside the Adjust Balance button. Optimistic update on success.
+- **i18n**: added ~20 new keys (change password, strength labels, activity feed, streak reset) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- Change password: wrong current → invalidCredentials; same password → samePassword; too short → minPassword ✓
+- Dashboard activity API: returns activities (withdrawal, withdrawal_req, earnings) ✓
+- Admin streak reset → {ok:true, streak:0} ✓
+- Browser: dashboard "সাম্প্রতিক কার্যকলাপ" activity feed present ✓
+- Settings "পাসওয়ার্ড পরিবর্তন" present → dialog opens with 3 password fields ✓
+- Password strength meter shows "শক্তিশালী" (Strong) for a strong password ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-10 features implemented, verified end-to-end, lint clean.
+- **New features**: Change password (API + dialog with strength meter + Security section in settings), dashboard activity feed (merged transactions + withdrawals timeline), admin streak reset (button in user detail drawer).
+- **Styling**: Password strength meter (3 colored bars + label), activity timeline with type-colored icons, 2-col action grid (adjust balance + reset streak) in user detail.
+- **Architecture**: Change password reuses existing scrypt hashPassword/verifyPassword helpers. Activity feed merges two queries server-side and sorts — simple, no new DB model. Streak reset only zeroes `streak` (preserves `bestStreak` for history). ActivityFeed depends on refreshKey for pull-to-refresh support.
+- **Recommended next steps**: two-factor auth, job proof upload, referral tracking with reward, real-time push via SW, offline job queue, weekly digest email, admin audit log, scheduled job publishing.
