@@ -16,6 +16,7 @@ import { LeaderboardView } from '@/components/leaderboard/leaderboard-view'
 import { SettingsView } from '@/components/settings/settings-view'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { PullToRefresh } from '@/components/layout/pull-to-refresh'
+import { OnboardingSheet, useOnboarding } from '@/components/onboarding/onboarding-sheet'
 import { NotificationBell } from '@/components/layout/notification-bell'
 import { Button } from '@/components/ui/button'
 
@@ -35,6 +36,7 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
   const setLang = useAppStore((s) => s.setLang)
   const setAdminAsUser = useAppStore((s) => s.setAdminAsUser)
   const triggerRefresh = useAppStore((s) => s.triggerRefresh)
+  const { shouldShow: showOnboarding, setShow: setShowOnboarding } = useOnboarding()
   const { theme, setTheme } = useTheme()
 
   // sync html lang attribute
@@ -142,6 +144,9 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
       {/* mobile bottom nav */}
       <BottomNav />
       </div>
+
+      {/* first-visit onboarding */}
+      <OnboardingSheet open={showOnboarding} onOpenChange={setShowOnboarding} />
     </PullToRefresh>
   )
 }

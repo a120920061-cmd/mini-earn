@@ -294,3 +294,38 @@ Stage Summary:
 - **Styling**: Custom AI-generated emerald app icon, pull indicator with rotating RefreshCw → spinner, analytics bar chart with today highlight + hover tooltips, category bars with per-category colors.
 - **Architecture**: SW only registers in production (avoids dev caching issues). Pull-to-refresh uses a global refreshKey counter in the store — views opt in by depending on it. Analytics computed via Prisma groupBy + in-memory bucketing (SQLite-friendly). Image generation via z-ai-web-dev-sdk CLI.
 - **Recommended next steps**: real-time push notifications via SW, offline job queue, admin CSV export, job proof upload, referral tracking, weekly digest email, PWA install prompt banner.
+
+---
+Task ID: 9
+Agent: main (Z.ai Code) — recurring web dev review (round 9)
+Task: QA via agent-browser, add job sort options, first-visit onboarding sheet, admin CSV export, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean. Investigated wallet-balance display discrepancy (header ৳১৭ vs wallet ৳০) — confirmed it's a sandbox artifact (server killed between calls → session cookie lost), not a code bug. Identified gaps: no sort on jobs, no onboarding for new users, no admin data export.
+- **Job sort options** (new feature — better job discovery):
+  - `JobsListView`: added `sort` state (featured | reward-high | reward-low | newest) with a Select dropdown next to the search bar (ArrowDownUp icon). Sorting applied after filtering — featured (default) puts featured first then reward desc; reward-high/low sort by reward; newest sorts by createdAt.
+  - Replaced `filtered` with `sorted` in the render (empty-state check + map).
+- **First-visit onboarding sheet** (new feature — guides new users):
+  - `OnboardingSheet` component: slide-in sheet with Rocket header, 4 numbered steps (Pick a Job → Complete → Get Rewarded → Withdraw), each with colored icon + title + description. "Start Now" → navigates to jobs; "Got it" → dismisses.
+  - `useOnboarding` hook: checks localStorage `me-onboarding-seen` flag; auto-shows sheet 800ms after first login (after splash). Dismiss sets the flag so it never shows again.
+  - Wired into AppShell — auto-opens for first-time users.
+- **Admin CSV export** (new feature — data portability):
+  - API `GET /api/admin/export?type=users|submissions|withdrawals` (admin): builds CSV with proper escaping (quotes/commas/newlines), returns with `Content-Type: text/csv` + `Content-Disposition: attachment`. Users export includes name/username/email/balance/totalEarned/status/streak/bestStreak/joined. Submissions + withdrawals include user + job/withdrawal details.
+  - `ExportButtons` component on admin overview: 3 buttons (Users/Submissions/Withdrawals lists) that trigger browser download via hidden anchor (keeps cookie auth). Toast on click.
+- **i18n**: added ~25 new keys (sort options, onboarding steps, export labels) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- CSV export: users.csv (Name,Username,Email,Balance... + data rows), submissions.csv, withdrawals.csv all with correct headers + data ✓
+- Non-admin export returns 403 ✓
+- Content-Type: text/csv ✓
+- Browser: onboarding sheet auto-shows on first visit ("যেভাবে কাজ করে") ✓
+- Jobs sort dropdown present (button[role=combobox]) ✓
+- Admin overview export buttons present ("ডেটা এক্সপোর্ট") ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-9 features implemented, verified end-to-end, lint clean.
+- **New features**: Job sort options (4 modes via Select dropdown), first-visit onboarding sheet (4-step guide with localStorage flag), admin CSV export (users/submissions/withdrawals with proper escaping).
+- **Styling**: Sort dropdown with ArrowDownUp icon, onboarding sheet with Rocket header + numbered colored step icons, export buttons card with 3 icon-labeled buttons.
+- **Architecture**: Onboarding uses localStorage flag (no DB) — purely client-side, fires once. CSV export builds strings server-side with RFC-4180-style escaping. Export download uses hidden anchor element to preserve session cookies (no fetch blob needed).
+- **Recommended next steps**: real-time push via SW, offline job queue, job proof upload, referral tracking with reward, weekly digest email, admin audit log, scheduled job publishing, PWA install prompt banner.

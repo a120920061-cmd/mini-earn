@@ -8,6 +8,7 @@ import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { api, formatMoney, formatNumber, timeAgo } from '@/lib/api'
 import { AdminAnalytics } from '@/components/admin/admin-analytics'
+import { ExportButtons } from '@/components/admin/export-buttons'
 
 type Stats = {
   totalUsers: number
@@ -185,6 +186,9 @@ export function AdminOverview() {
           )}
         </Card>
       </div>
+
+      {/* export data */}
+      <ExportButtons />
 
       {/* recent withdrawals */}
       <Card className="p-4">

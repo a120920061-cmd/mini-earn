@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, SearchX, Heart } from 'lucide-react'
+import { Loader2, SearchX, Heart, ArrowDownUp } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { JobCard, type JobItem } from '@/components/jobs/job-card'
 import { CategoriesExplore } from '@/components/jobs/categories-explore'
 import { useAppStore } from '@/store/use-app-store'
@@ -19,6 +20,7 @@ export function JobsListView() {
   const [q, setQ] = useState('')
   const [cat, setCat] = useState<string>('all')
   const [favOnly, setFavOnly] = useState(false)
+  const [sort, setSort] = useState<'featured' | 'reward-high' | 'reward-low' | 'newest'>('featured')
 
   useEffect(() => {
     let alive = true
@@ -40,6 +42,23 @@ export function JobsListView() {
       j.description.toLowerCase().includes(q.toLowerCase())
     const matchesFav = !favOnly || j.favorited
     return matchesCat && matchesQ && matchesFav
+  })
+
+  // sort the filtered list
+  const sorted = [...filtered].sort((a, b) => {
+    switch (sort) {
+      case 'reward-high':
+        return Number(b.reward) - Number(a.reward)
+      case 'reward-low':
+        return Number(a.reward) - Number(b.reward)
+      case 'newest':
+        return (b.createdAt || '').localeCompare(a.createdAt || '')
+      case 'featured':
+      default:
+        // featured first, then by reward desc
+        if (a.featured !== b.featured) return a.featured ? -1 : 1
+        return Number(b.reward) - Number(a.reward)
+    }
   })
 
   const favCount = (jobs || []).filter((j) => j.favorited).length
@@ -72,22 +91,36 @@ export function JobsListView() {
         </p>
       </div>
 
-      {/* search */}
-      <div className="relative">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={t('search')}
-          className="h-11 pl-4"
-        />
-        {q && (
-          <button
-            onClick={() => setQ('')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm px-2"
-          >
-            ✕
-          </button>
-        )}
+      {/* search + sort */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t('search')}
+            className="h-11 pl-4"
+          />
+          {q && (
+            <button
+              onClick={() => setQ('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm px-2"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <Select value={sort} onValueChange={(v) => setSort(v as any)}>
+          <SelectTrigger className="h-11 w-[130px] shrink-0">
+            <ArrowDownUp className="size-4 text-muted-foreground" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="featured">{t('sortFeatured')}</SelectItem>
+            <SelectItem value="reward-high">{t('sortRewardHigh')}</SelectItem>
+            <SelectItem value="reward-low">{t('sortRewardLow')}</SelectItem>
+            <SelectItem value="newest">{t('sortNewest')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* categories explore grid (only when no filter active) */}
@@ -132,7 +165,7 @@ export function JobsListView() {
       </div>
 
       {/* list */}
-      {filtered.length === 0 ? (
+      {sorted.length === 0 ? (
         <Card className="p-10 text-center">
           <div className="size-16 rounded-2xl bg-muted grid place-items-center mx-auto mb-4">
             {favOnly ? <Heart className="size-8 text-muted-foreground" /> : <SearchX className="size-8 text-muted-foreground" />}
@@ -144,7 +177,7 @@ export function JobsListView() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {filtered.map((job) => (
+          {sorted.map((job) => (
             <JobCard key={job.id} job={job} onStart={openJob} />
           ))}
         </div>
