@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Loader2, AtSign, Mail, Wallet, Flame, Award, Briefcase, ArrowDownToLine, TrendingUp } from 'lucide-react'
+import { X, Loader2, AtSign, Mail, Wallet, Flame, Award, Briefcase, ArrowDownToLine, TrendingUp, Pencil } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -9,11 +9,13 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useT } from '@/hooks/use-t'
 import { api, formatMoney, formatNumber, timeAgo } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { BalanceAdjustDialog } from '@/components/admin/balance-adjust-dialog'
 
 type BadgeItem = {
   id: string
@@ -56,6 +58,7 @@ export function UserDetailSheet({
   const { t, lang } = useT()
   const [data, setData] = useState<UserStats | null>(null)
   const [loading, setLoading] = useState(false)
+  const [balOpen, setBalOpen] = useState(false)
 
   useEffect(() => {
     if (!userId || !open) return
@@ -133,6 +136,18 @@ export function UserDetailSheet({
               <Stat icon={<Award className="size-4" />} value={`${formatNumber(data.stats.unlockedBadges, lang)}/${formatNumber(data.stats.totalBadges, lang)}`} label={t('badges')} color="text-purple-600" />
             </div>
 
+            {/* adjust balance button (non-admin users only) */}
+            {!data.user.isAdmin && (
+              <Button
+                variant="outline"
+                className="w-full h-10"
+                onClick={() => setBalOpen(true)}
+              >
+                <Pencil className="size-4" />
+                {t('adjustBalance')}
+              </Button>
+            )}
+
             {/* badges */}
             <div>
               <p className="text-xs font-semibold uppercase text-muted-foreground mb-2">{t('badges')}</p>
@@ -179,6 +194,20 @@ export function UserDetailSheet({
               </div>
             </div>
           </div>
+        )}
+
+        {/* balance adjust dialog */}
+        {data && (
+          <BalanceAdjustDialog
+            userId={data.user.id}
+            userName={data.user.name}
+            currentBalance={data.user.balance}
+            open={balOpen}
+            onOpenChange={setBalOpen}
+            onDone={(newBal) => {
+              setData((prev) => prev ? { ...prev, user: { ...prev.user, balance: newBal } } : prev)
+            }}
+          />
         )}
       </SheetContent>
     </Sheet>

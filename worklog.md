@@ -221,3 +221,40 @@ Stage Summary:
 - **Styling**: Heart fill-red animation on favorite, red favorites filter chip with count badge, settings sections with icon rows + chevrons, about card with heart icon.
 - **Architecture**: Favorites use a unique constraint [userId,jobId] for idempotent toggling. Settings view reuses the existing notifications/read-all endpoint for "clear" semantics (no new delete endpoint needed). The versioned db cache (prisma_v5) prevents stale-client crashes.
 - **Recommended next steps**: referral tracking with reward, streak freeze/restore, notification delete endpoint (real clear vs mark-read), PWA offline + push, job proof upload, admin favorites analytics, weekly digest email.
+
+---
+Task ID: 7
+Agent: main (Z.ai Code) — recurring web dev review (round 7)
+Task: QA via agent-browser, add admin submissions manager, admin balance adjustment, job categories explore grid, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean, no errors. Identified gaps: no admin submissions visibility, no balance adjustment tool, jobs list lacks visual category discovery.
+- **Admin submissions manager** (new feature — gives admins full visibility into job completions):
+  - API `GET /api/admin/submissions?status=&q=&jobId=` (admin) — returns all submissions with job + user includes, supports status filter + text search (user name/username/email or job title) + jobId filter. 200 max, ordered by createdAt desc.
+  - `AdminSubmissionsManager` component: search input (debounced), status filter chips (All/Completed/Rejected), submission cards with status icon + job title + category badge + user info + timeAgo + reward + status badge. Skeleton loading + empty state.
+  - Added "Submissions" tab (5th) to admin panel with ClipboardList icon. Added `admin-submissions` to AdminView store type.
+- **Admin balance adjustment** (new feature — manual balance correction):
+  - API `POST /api/admin/users/[id]/balance` (admin) — body {amount, reason}. amount>0 adds (also increments totalEarned), amount<0 deducts. Prevents negative balance, blocks admin targets. Creates an adjustment transaction + sends a notification to the user.
+  - `BalanceAdjustDialog` component: add/deduct mode toggle (green/red), amount input with ৳ prefix, optional reason field. Wired into `UserDetailSheet` as an "Adjust Balance" button (hidden for admin users). Optimistic balance update on success.
+- **Job categories explore grid** (new feature — better job discovery):
+  - `CategoriesExplore` component: 2-col grid of category cards, each with colored icon (visit=sky, social=pink, media=purple, download=amber, survey=teal, general=primary), category name (capitalized), job count with Bangla numerals, hover lift effect + arrow.
+  - Added to `JobsListView` — shows above the filter chips only when no search/filter is active (clean initial state). Clicking a category card filters the jobs list to that category.
+- **i18n**: added ~25 new keys (submissions, balance adjust, categories explore) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- Admin submissions API: returns submissions with status/reward/title/name ✓
+- Search filters by user name ("Sub QA") ✓
+- Balance adjust add ৳5 → balance 7, totalEarned 7 ✓
+- Balance adjust deduct ৳2 → balance 5 ✓
+- User received "Balance Added" + "Balance Deducted" notifications ✓
+- Browser: jobs "ক্যাটাগরি ব্রাউজ করুন" explore grid (Visit ২ টি কাজ, Social ১, Media ১, Download ১, Survey ১) ✓
+- Admin submissions tab: "সাবমিশন ব্যবস্থাপনা" with "১০ সাবমিশন", filter chips, submission cards ✓
+- Admin user detail: "ব্যালেন্স পরিবর্তন" adjust button present ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-7 features implemented, verified end-to-end, lint clean.
+- **New features**: Admin submissions manager (full visibility + search + status filter), admin balance adjustment (add/deduct with reason + notification), job categories explore grid (visual 2-col cards with counts + colors).
+- **Styling**: Category cards with colored icons + hover lift + arrow, submissions cards with status icons + category badges, balance dialog with green/red mode toggle.
+- **Architecture**: Submissions API does in-memory q-filtering (after Prisma include) since SQLite text search across relations is awkward — simple and works for 200-record max. Balance adjust is atomic via $transaction (user update + transaction record). Balance adjust blocked for admin users + prevents negative balances.
+- **Recommended next steps**: submission rejection flow (admin can reject + refund), CSV export of submissions/withdrawals, job proof upload, PWA offline, referral tracking, admin audit log, scheduled job publishing.

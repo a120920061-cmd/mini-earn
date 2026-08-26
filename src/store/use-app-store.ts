@@ -11,7 +11,7 @@ export type UserView =
   | 'leaderboard'
   | 'settings'
 
-export type AdminView = 'admin-overview' | 'admin-jobs' | 'admin-users' | 'admin-job-form' | 'admin-withdrawals'
+export type AdminView = 'admin-overview' | 'admin-jobs' | 'admin-users' | 'admin-job-form' | 'admin-withdrawals' | 'admin-submissions'
 
 export type AppUser = {
   id: string

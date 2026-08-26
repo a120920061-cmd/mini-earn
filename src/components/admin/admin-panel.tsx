@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { LayoutDashboard, Briefcase, Users as UsersIcon, Globe, Sun, Moon, ExternalLink, ArrowDownToLine, Megaphone } from 'lucide-react'
+import { LayoutDashboard, Briefcase, Users as UsersIcon, Globe, Sun, Moon, ExternalLink, ArrowDownToLine, Megaphone, ClipboardList } from 'lucide-react'
 import { useAppStore, type AdminView } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { useTheme } from 'next-themes'
@@ -13,14 +13,16 @@ import { AdminJobsManager } from '@/components/admin/admin-jobs-manager'
 import { AdminJobForm } from '@/components/admin/admin-job-form'
 import { AdminUsersManager } from '@/components/admin/admin-users-manager'
 import { AdminWithdrawalsManager } from '@/components/admin/admin-withdrawals-manager'
+import { AdminSubmissionsManager } from '@/components/admin/admin-submissions-manager'
 import { BroadcastDialog } from '@/components/admin/broadcast-dialog'
 import { useState } from 'react'
 
-const tabs: { key: AdminView; tKey: 'overview' | 'manageJobs' | 'manageUsers' | 'withdrawals'; icon: typeof LayoutDashboard }[] = [
+const tabs: { key: AdminView; tKey: 'overview' | 'manageJobs' | 'manageUsers' | 'withdrawals' | 'submissions'; icon: typeof LayoutDashboard }[] = [
   { key: 'admin-overview', tKey: 'overview', icon: LayoutDashboard },
   { key: 'admin-jobs', tKey: 'manageJobs', icon: Briefcase },
   { key: 'admin-users', tKey: 'manageUsers', icon: UsersIcon },
   { key: 'admin-withdrawals', tKey: 'withdrawals', icon: ArrowDownToLine },
+  { key: 'admin-submissions', tKey: 'submissions', icon: ClipboardList },
 ]
 
 export function AdminPanel() {
@@ -126,6 +128,7 @@ export function AdminPanel() {
           {adminView === 'admin-jobs' && <AdminJobsManager />}
           {adminView === 'admin-users' && <AdminUsersManager />}
           {adminView === 'admin-withdrawals' && <AdminWithdrawalsManager />}
+          {adminView === 'admin-submissions' && <AdminSubmissionsManager />}
           {adminView === 'admin-job-form' && <AdminJobForm />}
         </div>
       </main>

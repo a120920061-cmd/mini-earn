@@ -5,6 +5,7 @@ import { Loader2, SearchX, Heart } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { JobCard, type JobItem } from '@/components/jobs/job-card'
+import { CategoriesExplore } from '@/components/jobs/categories-explore'
 import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { api, formatNumber } from '@/lib/api'
@@ -42,6 +43,17 @@ export function JobsListView() {
 
   const favCount = (jobs || []).filter((j) => j.favorited).length
 
+  // category counts for the explore grid
+  const catCounts = (jobs || []).reduce<Record<string, number>>((acc, j) => {
+    const c = j.category || 'general'
+    acc[c] = (acc[c] || 0) + 1
+    return acc
+  }, {})
+  const catList = Object.entries(catCounts).map(([category, count]) => ({ category, count }))
+
+  // show explore grid only when no active filter/search
+  const showExplore = !q && cat === 'all' && !favOnly
+
   if (jobs === null) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -76,6 +88,14 @@ export function JobsListView() {
           </button>
         )}
       </div>
+
+      {/* categories explore grid (only when no filter active) */}
+      {showExplore && catList.length > 1 && (
+        <CategoriesExplore
+          categories={catList}
+          onSelect={(c) => { setCat(c); setFavOnly(false) }}
+        />
+      )}
 
       {/* filter chips: favorites + categories */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
