@@ -37,6 +37,7 @@ import { toast } from 'sonner'
 import { useTheme } from 'next-themes'
 import { dict } from '@/lib/i18n'
 import { ShareCard } from '@/components/profile/share-card'
+import { BadgesGrid } from '@/components/profile/badges-grid'
 
 export function ProfileView() {
   const { t, lang } = useT()
@@ -152,6 +153,9 @@ export function ProfileView() {
           <InfoRow icon={<Mail className="size-4" />} label={t('email')} value={user.email} />
         </Card>
       </div>
+
+      {/* achievements / badges */}
+      <BadgesGrid />
 
       {/* settings */}
       <div>

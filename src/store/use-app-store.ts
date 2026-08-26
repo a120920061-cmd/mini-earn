@@ -21,6 +21,9 @@ export type AppUser = {
   totalEarned: number
   isAdmin: boolean
   enabled: boolean
+  streak: number
+  bestStreak: number
+  lastJobAt: string | null
 }
 
 interface AppState {

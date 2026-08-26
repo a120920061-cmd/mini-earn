@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { notify } from '@/lib/notify'
+import { updateStreak } from '@/lib/streak'
 
 // POST — user completes a job, earns reward
 export async function POST(
@@ -62,6 +63,12 @@ export async function POST(
 
     const updated = await db.user.findUnique({ where: { id: user.id } })
 
+    // update streak (may award a bonus on multiples of 3)
+    const streakResult = await updateStreak(user.id)
+    const refreshed = streakResult.bonus > 0
+      ? await db.user.findUnique({ where: { id: user.id } })
+      : updated
+
     // non-blocking earning notification
     await notify({
       userId: user.id,
@@ -74,8 +81,10 @@ export async function POST(
     return NextResponse.json({
       ok: true,
       submission,
-      balance: updated?.balance ?? user.balance + reward,
-      totalEarned: updated?.totalEarned ?? user.totalEarned + reward,
+      balance: refreshed?.balance ?? user.balance + reward,
+      totalEarned: refreshed?.totalEarned ?? user.totalEarned + reward,
+      streak: streakResult.streak,
+      bonus: streakResult.bonus,
       reward,
     })
   } catch (e) {

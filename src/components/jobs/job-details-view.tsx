@@ -57,11 +57,20 @@ export function JobDetailsView() {
         ...user,
         balance: res.data!.balance,
         totalEarned: res.data!.totalEarned,
+        streak: (res.data as any).streak ?? user.streak,
+        bestStreak: user.bestStreak,
+        lastJobAt: new Date().toISOString(),
       })
     }
     toast.success(t('rewardAdded'), {
       description: `${formatMoney(res.data!.reward, t('taka'), lang)}`,
     })
+    // streak bonus toast
+    if ((res.data as any).bonus > 0) {
+      toast.success(`🔥 ${t('streakBonus')} +৳${(res.data as any).bonus}`, {
+        description: t('streakMilestone'),
+      })
+    }
   }
 
   if (loading) {

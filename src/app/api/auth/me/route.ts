@@ -16,6 +16,9 @@ export async function GET() {
         totalEarned: user.totalEarned,
         isAdmin: user.isAdmin,
         enabled: user.enabled,
+        streak: user.streak,
+        bestStreak: user.bestStreak,
+        lastJobAt: user.lastJobAt?.toISOString() ?? null,
       },
     })
   } catch (e) {

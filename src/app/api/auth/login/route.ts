@@ -33,6 +33,9 @@ export async function POST(req: Request) {
         totalEarned: user.totalEarned,
         isAdmin: user.isAdmin,
         enabled: user.enabled,
+        streak: user.streak,
+        bestStreak: user.bestStreak,
+        lastJobAt: user.lastJobAt?.toISOString() ?? null,
       },
     })
   } catch (e) {

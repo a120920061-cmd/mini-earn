@@ -10,9 +10,10 @@ import { useT } from '@/hooks/use-t'
 import { api, formatMoney, formatNumber } from '@/lib/api'
 import { WeeklyEarningsChart } from '@/components/dashboard/weekly-chart'
 import { TopEarnersPreview } from '@/components/dashboard/top-earners-preview'
+import { StreakCard } from '@/components/dashboard/streak-card'
 
 type DashData = {
-  user: { name: string; balance: number; totalEarned: number }
+  user: { name: string; balance: number; totalEarned: number; streak: number; bestStreak: number; lastJobAt: string | null }
   featured: JobItem[]
   stats: { completedJobs: number; availableJobs: number }
 }
@@ -38,6 +39,9 @@ export function DashboardView() {
           ...useAppStore.getState().user!,
           balance: res.data.user.balance,
           totalEarned: res.data.user.totalEarned,
+          streak: res.data.user.streak,
+          bestStreak: res.data.user.bestStreak,
+          lastJobAt: res.data.user.lastJobAt,
         } as any)
       }
       setLoading(false)
@@ -99,6 +103,9 @@ export function DashboardView() {
           label={t('availableJobs')}
         />
       </div>
+
+      {/* daily streak */}
+      <StreakCard />
 
       {/* weekly earnings chart */}
       <WeeklyEarningsChart />

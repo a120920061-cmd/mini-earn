@@ -144,3 +144,44 @@ Stage Summary:
 - **Styling**: Trophy podium with gradient avatars + crown, rank badges with Bangla numerals, gradient share card, broadcast dialog with char counter + recipients badge.
 - **Architecture**: Leaderboard rank computed via count-of-higher query (simple, works on SQLite). Broadcast uses batched createMany (100/batch) for scalability. Share link is stateless (no DB tracking) to keep it lightweight per the "minimal" project ethos.
 - **Recommended next steps**: referral tracking (reward referrer when referee completes first job), weekly leaderboard reset cron, leaderboard privacy toggle, broadcast templates, push notifications (PWA), achievement badges/streaks, admin leaderboard management.
+
+---
+Task ID: 5
+Agent: main (Z.ai Code) — recurring web dev review (round 5)
+Task: QA via agent-browser, then add daily streak system, achievement badges, admin user detail drawer, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean, no errors. Identified engagement gap: no streak/gamification to drive daily return visits, no badges for milestones, admin lacks a per-user detail view.
+- **Daily streak system** (new feature — drives daily engagement):
+  - Prisma: added `streak`, `bestStreak`, `lastJobAt` fields to User. Ran `db:push`. Bumped db cache to `prisma_v4` with dynamic key typing + isValidClient check for withdrawal+notification.
+  - `src/lib/streak.ts`: `updateStreak(userId)` — computes new streak based on lastJobAt day-diff (0=same day no change, 1=consecutive increment, >1=reset to 1). Awards a flat ৳2 bonus on multiples of 3 (3,6,9...), creates an adjustment transaction + sends a streak-bonus notification.
+  - Wired into `POST /api/jobs/[id]/submit` — returns streak + bonus in response. Job details view shows a 🔥 streak bonus toast when awarded and updates the user store streak.
+  - Updated all auth routes (me/login/register/profile/dashboard) to return streak/bestStreak/lastJobAt. Updated `AppUser` store type.
+  - `StreakCard` component on dashboard: flame icon (pulsing orange gradient when streak≥3), streak count + "day streak", best streak, status pill (today/active/lost), 7-day progress dots, hint text.
+- **Achievement badges** (new feature — visual milestone rewards):
+  - `src/lib/achievements.ts`: `computeBadges(userId)` — 9 badges (First Steps, Getting Busy, Job Master, First Taka, Earner, Big Earner, On Fire, Unstoppable, Loyal Member) computed from completedJobs/totalEarned/bestStreak/accountAge. Returns unlocked status + progress.
+  - `GET /api/achievements` route — returns badges + unlockedCount/totalCount.
+  - `BadgesGrid` component on profile: Award icon header with "X of Y" counter, 3-col grid of badges (emoji icon + gradient when unlocked, lock icon + grayscale when locked), progress bars on locked badges with current/target.
+- **Admin user detail drawer** (new feature — better user management):
+  - `GET /api/admin/users/[id]/stats` (admin) — full user profile + completedJobs/withdrawals/unlockedBadges counts + badges + recent 5 transactions.
+  - `UserDetailSheet` component: slide-in sheet with avatar, name, account status badges, info rows (username/email/balance/totalEarned/streak), 3-up quick stats (jobs/withdrawals/badges), badge grid (5-col), recent transactions list. Skeleton loading.
+  - Admin users manager: user cards now clickable (ChevronRight indicator) to open the detail sheet.
+- **i18n**: added ~20 new keys (streak, badges, achievements, unlocked/locked, milestones) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- Fresh register → streak:0, all badges locked ✓
+- Complete job → streak 0→1, reward ৳2, bonus:0 (not multiple of 3) ✓
+- me API → streak:1, bestStreak:1 ✓
+- achievements after job → unlockedCount:1 (First Steps unlocked) ✓
+- admin user stats → streak:1, bestStreak:1, completedJobs:1, unlockedBadges:1 ✓
+- Browser: dashboard "ডেইলি স্ট্রিক" card with "১ দিনের স্ট্রিক", "✓ আজ", progress dots ১/7 ✓
+- Profile "অর্জন" badges grid present ✓
+- Admin: user card clickable → detail sheet opens ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-5 features implemented, verified end-to-end, lint clean.
+- **New features**: Daily streak system (DB + logic + dashboard card with flame + bonus on multiples of 3), achievement badges (9 computed badges + profile grid + progress bars), admin user detail drawer (slide-in sheet with full stats + badges + recent transactions).
+- **Styling**: Pulsing flame gradient on streak card when hot, status pills, 7-day progress dots, badge gradient colors + lock states, slide-in drawer with skeleton loading, clickable user cards with chevron.
+- **Architecture**: Streak logic isolated in `src/lib/streak.ts` (pure function, fire-and-forget bonus notification). Badges computed on-demand from existing stats (no DB writes). Admin user stats endpoint reuses computeBadges. All bonus logic is atomic via Prisma $transaction in submit route.
+- **Recommended next steps**: referral tracking (reward referrer on referee's first job), weekly streak reset via cron, badge unlock notifications, streak freeze/restore (one-time grace), leaderboard "near me" view, PWA push notifications, streak leaderboard.

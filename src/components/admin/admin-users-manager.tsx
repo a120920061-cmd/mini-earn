@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Search, Loader2, Mail, AtSign, ShieldCheck, ShieldOff, Users as UsersIcon } from 'lucide-react'
+import { Search, Loader2, Mail, AtSign, ShieldCheck, ShieldOff, Users as UsersIcon, ChevronRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,7 @@ import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
 import { api, formatMoney, timeAgo } from '@/lib/api'
 import { toast } from 'sonner'
+import { UserDetailSheet } from '@/components/admin/user-detail-sheet'
 
 type AdminUser = {
   id: string
@@ -27,6 +28,8 @@ export function AdminUsersManager() {
   const { t, lang } = useT()
   const [users, setUsers] = useState<AdminUser[] | null>(null)
   const [q, setQ] = useState('')
+  const [detailId, setDetailId] = useState<string | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
 
   const load = useCallback(async (query: string) => {
     const res = await api<{ users: AdminUser[] }>(`/api/admin/users${query ? `?q=${encodeURIComponent(query)}` : ''}`)
@@ -97,7 +100,10 @@ export function AdminUsersManager() {
         <div className="space-y-3">
           {users.map((u) => (
             <Card key={u.id} className={`p-4 ${!u.enabled ? 'opacity-60' : ''}`}>
-              <div className="flex items-start gap-3">
+              <button
+                className="flex items-start gap-3 w-full text-left"
+                onClick={() => { setDetailId(u.id); setDetailOpen(true) }}
+              >
                 <div className="size-10 rounded-full bg-gradient-to-br from-primary/80 to-emerald-700 text-primary-foreground grid place-items-center font-bold shrink-0">
                   {u.name.charAt(0).toUpperCase()}
                 </div>
@@ -107,6 +113,7 @@ export function AdminUsersManager() {
                     {u.isAdmin && (
                       <Badge variant="secondary" className="text-[10px] h-5 px-1.5">Admin</Badge>
                     )}
+                    <ChevronRight className="size-4 text-muted-foreground ml-auto shrink-0" />
                   </div>
                   <div className="space-y-0.5 mt-1 text-xs text-muted-foreground">
                     <p className="flex items-center gap-1.5 truncate"><AtSign className="size-3" />@{u.username}</p>
@@ -118,7 +125,7 @@ export function AdminUsersManager() {
                     <span className="text-muted-foreground">· {timeAgo(u.createdAt, lang)}</span>
                   </div>
                 </div>
-              </div>
+              </button>
 
               {!u.isAdmin && (
                 <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t">
@@ -133,6 +140,12 @@ export function AdminUsersManager() {
           ))}
         </div>
       )}
+
+      <UserDetailSheet
+        userId={detailId}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   )
 }

@@ -27,6 +27,9 @@ export async function PATCH(req: Request) {
         totalEarned: true,
         isAdmin: true,
         enabled: true,
+        streak: true,
+        bestStreak: true,
+        lastJobAt: true,
       },
     })
 
@@ -35,6 +38,9 @@ export async function PATCH(req: Request) {
         ...updated,
         balance: Number(updated.balance),
         totalEarned: Number(updated.totalEarned),
+        streak: updated.streak,
+        bestStreak: updated.bestStreak,
+        lastJobAt: updated.lastJobAt?.toISOString() ?? null,
       },
     })
   } catch (e) {
