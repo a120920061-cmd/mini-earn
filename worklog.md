@@ -73,3 +73,39 @@ Stage Summary:
 - **Styling improvements**: Bangla numeral localization across all money/number displays, loading skeletons, smoother view transitions, better empty states with icons.
 - **Known limitation**: The sandbox kills background dev-server processes when a bash tool call ends, so the server must be restarted for live preview. The system's auto-runner initially managed it; after the required restart (to clear stale Prisma client), it needs manual restart.
 - **Recommended next steps**: job-completion proof upload (image/text), user avatar uploads, admin job reordering/drag-sort, withdrawal method-specific validation, email/notifications for withdrawal status changes, Bangla numeral formatting in date pickers.
+
+---
+Task ID: 3
+Agent: main (Z.ai Code) — recurring web dev review (round 3)
+Task: QA via agent-browser, then add notifications system, enrich admin overview with withdrawals, add job clone, improve empty states, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean, no errors. Identified gaps: no notifications feature, admin overview missing withdrawals summary, plain empty states, no quick job duplication.
+- **Notifications system** (new feature — closes the user-feedback loop):
+  - Prisma: added `Notification` model (userId, type, title, body, read, link, createdAt) + relation on User. Ran `db:push`.
+  - Bumped `src/lib/db.ts` cache version to `prisma_v3` + `isValidClient` now checks both `withdrawal` and `notification` models to avoid stale-client crashes after schema changes.
+  - `src/lib/notify.ts` helper: fire-and-forget notification creation (never blocks main flow).
+  - Wired notifications into flows: register (welcome → link jobs), job submit (earning → link wallet), withdraw request (→ link wallet), admin approve (approved → link wallet), admin reject (refunded → link wallet).
+  - API: `GET /api/notifications` (list + unreadCount), `PATCH /api/notifications/[id]/read` (mark one read), `POST /api/notifications/read-all` (mark all read).
+  - UI `NotificationBell`: bell icon with pulsing unread badge (9+ cap), dropdown panel with type-colored icons (earning/withdrawal/job/system), 30s polling, outside-click close, "Mark all read" button, click-to-navigate (wallet/jobs/dashboard), skeleton loading, empty state.
+- **Admin overview enrichment**: `GET /api/admin/stats` now returns `pendingWithdrawals`, `totalPaidOut`, and `recentWithdrawals[]`. Overview shows: pending-withdrawals pill button (when >0), dual summary cards (total earned gradient + total paid out card), and a new "Recent Withdrawals" section with status badges + user info + "Manage Withdrawals" link. All numbers use Bangla numerals.
+- **Job clone** (new feature): `POST /api/jobs/[id]/clone` (admin) creates a disabled, non-featured copy titled "X (copy)". Admin jobs manager: new Copy icon button with tooltip. Enables quick job templating — admin clones then edits.
+- **Richer empty states**: Jobs list empty state now shows a large icon + title + description + "check back soon" message. Dashboard no-jobs state shows a primary CTA card ("Start Earning" → Browse Jobs button) instead of plain text.
+- **i18n**: added ~15 new keys (notifications, markAllRead, recentActivity, cloneJob, recentWithdrawals, totalPaidOut, noWithdrawalsYet, empty-state descriptions, browseJobs) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- Fresh register → welcome notification created (unreadCount:1) ✓
+- Job submit → earning notification created (unreadCount 1→2) ✓
+- Mark all read → updated:2, unreadCount:0 ✓
+- Admin overview: pendingWithdrawals:0, totalPaidOut:৳10, recentWithdrawals array present ✓
+- Job clone → "Visit Website (copy)" created ✓
+- Browser UI: bell badge shows "1" (pulse animation), dropdown opens with "নোটিফিকেশন | 1 | সব পঠিত করুন | Welcome to Mini Earn! | ... | এইমাত্র", markAllRead button present ✓
+- Lint: clean (0 errors) ✓
+- No dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-3 features implemented, verified end-to-end, lint clean.
+- **New features**: Full notifications system (DB + API + bell UI with polling, badges, navigation), admin overview withdrawals summary + recent withdrawals section, job clone for quick templating.
+- **Styling improvements**: Richer empty states with icons + CTAs, notification bell with pulsing badge + type-colored icons, dual summary cards on admin overview, tooltip titles on admin job action buttons.
+- **Architecture notes**: Notifications are fire-and-forget (failures never block main flows). NotificationBell polls every 30s and refreshes on open. The versioned db cache (`prisma_v3`) prevents the stale-PrismaClient class of bugs seen in round 2.
+- **Recommended next steps**: real-time push (WebSocket/SSE) instead of polling, notification preferences/settings, admin broadcast notifications, job proof upload (image/text), withdrawal method-specific account validation, email notifications, leaderboard/rankings.

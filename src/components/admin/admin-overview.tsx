@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Users, Briefcase, CheckCircle2, Coins, TrendingUp, Loader2, ArrowRight } from 'lucide-react'
+import { Users, Briefcase, CheckCircle2, Coins, TrendingUp, Loader2, ArrowRight, ArrowDownToLine, Clock } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
-import { api, formatMoney, timeAgo } from '@/lib/api'
+import { api, formatMoney, formatNumber, timeAgo } from '@/lib/api'
 
 type Stats = {
   totalUsers: number
@@ -14,10 +14,19 @@ type Stats = {
   activeJobs: number
   totalSubmissions: number
   totalPaid: number
+  pendingWithdrawals: number
+  totalPaidOut: number
 }
 type RecentUser = { id: string; name: string; username: string; email: string; balance: number; enabled: boolean; createdAt: string }
 type RecentJob = { id: string; title: string; reward: number; featured: boolean; enabled: boolean; createdAt: string }
-type AdminData = { stats: Stats; recentUsers: RecentUser[]; recentJobs: RecentJob[] }
+type RecentWithdrawal = { id: string; amount: number; method: string; status: string; createdAt: string; user: { name: string; username: string } }
+type AdminData = { stats: Stats; recentUsers: RecentUser[]; recentJobs: RecentJob[]; recentWithdrawals: RecentWithdrawal[] }
+
+const wdStatusStyle: Record<string, string> = {
+  pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  approved: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  rejected: 'bg-destructive/10 text-destructive',
+}
 
 export function AdminOverview() {
   const { t, lang } = useT()
@@ -43,17 +52,28 @@ export function AdminOverview() {
   }
 
   const stats = [
-    { icon: Users, label: t('totalUsers'), value: data.stats.totalUsers, color: 'bg-sky-500/10 text-sky-600 dark:text-sky-400' },
-    { icon: Briefcase, label: t('totalJobs'), value: data.stats.totalJobs, color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
-    { icon: CheckCircle2, label: t('activeJobs'), value: data.stats.activeJobs, color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
-    { icon: TrendingUp, label: t('totalSubmissions'), value: data.stats.totalSubmissions, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+    { icon: Users, label: t('totalUsers'), value: formatNumber(data.stats.totalUsers, lang), color: 'bg-sky-500/10 text-sky-600 dark:text-sky-400' },
+    { icon: Briefcase, label: t('totalJobs'), value: formatNumber(data.stats.totalJobs, lang), color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
+    { icon: CheckCircle2, label: t('activeJobs'), value: formatNumber(data.stats.activeJobs, lang), color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
+    { icon: TrendingUp, label: t('totalSubmissions'), value: formatNumber(data.stats.totalSubmissions, lang), color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
   ]
 
   return (
     <div className="space-y-5 animate-view-in">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t('overview')}</h1>
-        <p className="text-sm text-muted-foreground">{t('quickStats')}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t('overview')}</h1>
+          <p className="text-sm text-muted-foreground">{t('quickStats')}</p>
+        </div>
+        {data.stats.pendingWithdrawals > 0 && (
+          <button
+            onClick={() => setAdminView('admin-withdrawals')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition-colors"
+          >
+            <Clock className="size-3.5 animate-pulse" />
+            {formatNumber(data.stats.pendingWithdrawals, lang)} {t('pending')}
+          </button>
+        )}
       </div>
 
       {/* stats grid */}
@@ -69,13 +89,29 @@ export function AdminOverview() {
         ))}
       </div>
 
-      {/* total paid */}
-      <div className="rounded-2xl bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground p-5 shadow-lg flex items-center justify-between">
-        <div>
+      {/* earnings + withdrawals dual summary */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        {/* total earned */}
+        <div className="rounded-2xl bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground p-5 shadow-lg">
           <p className="text-sm opacity-90 flex items-center gap-1.5">
             <Coins className="size-4" /> {t('totalEarned')} ({t('earning')})
           </p>
           <p className="text-3xl font-bold mt-1">{formatMoney(data.stats.totalPaid, t('taka'), lang)}</p>
+        </div>
+        {/* total paid out */}
+        <div className="rounded-2xl border bg-card p-5">
+          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <ArrowDownToLine className="size-4" /> {t('totalPaidOut')}
+          </p>
+          <p className="text-3xl font-bold mt-1 text-foreground">{formatMoney(data.stats.totalPaidOut, t('taka'), lang)}</p>
+          {data.stats.pendingWithdrawals > 0 && (
+            <button
+              onClick={() => setAdminView('admin-withdrawals')}
+              className="mt-2 text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 hover:underline"
+            >
+              {formatNumber(data.stats.pendingWithdrawals, lang)} {t('pendingWithdrawals').toLowerCase()} <ArrowRight className="size-3" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -145,6 +181,42 @@ export function AdminOverview() {
           )}
         </Card>
       </div>
+
+      {/* recent withdrawals */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold">{t('recentWithdrawals')}</h3>
+          <button
+            onClick={() => setAdminView('admin-withdrawals')}
+            className="text-xs text-primary font-medium flex items-center gap-1"
+          >
+            {t('manageWithdrawals')} <ArrowRight className="size-3" />
+          </button>
+        </div>
+        {data.recentWithdrawals.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">{t('noWithdrawalsYet')}</p>
+        ) : (
+          <div className="space-y-2">
+            {data.recentWithdrawals.map((w) => (
+              <div key={w.id} className="flex items-center gap-3 py-1.5">
+                <div className={`size-8 rounded-lg grid place-items-center shrink-0 ${wdStatusStyle[w.status] || wdStatusStyle.pending}`}>
+                  <ArrowDownToLine className="size-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{w.user.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">@{w.user.username} · {t(w.method as any) || w.method}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold">{formatMoney(w.amount, t('taka'), lang)}</p>
+                  <Badge variant="outline" className={`text-[9px] h-4 px-1 mt-0.5 border-0 ${wdStatusStyle[w.status] || wdStatusStyle.pending}`}>
+                    {t(w.status as any)}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   )
 }

@@ -167,6 +167,23 @@ export const dict = {
     last7Days: 'গত ৭ দিন',
     thisWeek: 'এই সপ্তাহ',
     sun: 'রবি', mon: 'সোম', tue: 'মঙ্গল', wed: 'বুধ', thu: 'বৃহ', fri: 'শুক্র', sat: 'শনি',
+    // notifications
+    notifications: 'নোটিফিকেশন',
+    noNotifications: 'কোনো নোটিফিকেশন নেই',
+    markAllRead: 'সব পঠিত করুন',
+    recentActivity: 'সাম্প্রতিক কার্যকলাপ',
+    viewAll: 'সব দেখুন',
+    // admin extras
+    cloneJob: 'কপি করুন',
+    jobCloned: 'কাজ কপি হয়েছে',
+    recentWithdrawals: 'সাম্প্রতিক উত্তোলন',
+    pendingWithdrawalsCount: 'অপেক্ষমাণ উত্তোলন',
+    noWithdrawalsYet: 'এখনও কোনো উত্তোলন নেই',
+    totalPaidOut: 'মোট পরিশোধিত',
+    // empty states
+    noJobsAvailableDesc: 'নতুন কাজ যোগ হলে এখানে দেখা যাবে। পরে আবার চেক করুন!',
+    startFirstJob: 'আয় শুরু করতে প্রথম কাজটি সম্পন্ন করুন',
+    browseJobs: 'কাজ ব্রাউজ করুন',
   },
   en: {
     appName: 'Mini Earn',
@@ -325,6 +342,23 @@ export const dict = {
     last7Days: 'Last 7 days',
     thisWeek: 'This week',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
+    // notifications
+    notifications: 'Notifications',
+    noNotifications: 'No notifications yet',
+    markAllRead: 'Mark all read',
+    recentActivity: 'Recent Activity',
+    viewAll: 'View All',
+    // admin extras
+    cloneJob: 'Clone',
+    jobCloned: 'Job cloned',
+    recentWithdrawals: 'Recent Withdrawals',
+    pendingWithdrawalsCount: 'Pending Withdrawals',
+    noWithdrawalsYet: 'No withdrawals yet',
+    totalPaidOut: 'Total Paid Out',
+    // empty states
+    noJobsAvailableDesc: 'New jobs will appear here. Check back soon!',
+    startFirstJob: 'Complete your first job to start earning',
+    browseJobs: 'Browse Jobs',
   },
 } as const
 

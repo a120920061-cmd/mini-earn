@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
+import { notify } from '@/lib/notify'
 
 // POST — user completes a job, earns reward
 export async function POST(
@@ -60,6 +61,15 @@ export async function POST(
     ])
 
     const updated = await db.user.findUnique({ where: { id: user.id } })
+
+    // non-blocking earning notification
+    await notify({
+      userId: user.id,
+      type: 'earning',
+      title: job.title,
+      body: `+৳${reward.toFixed(2)} ${job.title}`,
+      link: 'wallet',
+    })
 
     return NextResponse.json({
       ok: true,

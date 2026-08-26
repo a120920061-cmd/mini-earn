@@ -7,13 +7,26 @@ export async function GET() {
     const user = await getCurrentUser()
     if (!user?.isAdmin) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
-    const [totalUsers, totalJobs, activeJobs, totalSubmissions, agg] = await Promise.all([
+    const [
+      totalUsers,
+      totalJobs,
+      activeJobs,
+      totalSubmissions,
+      earningAgg,
+      pendingWithdrawals,
+      approvedWithdrawalsAgg,
+    ] = await Promise.all([
       db.user.count({ where: { isAdmin: false } }),
       db.job.count(),
       db.job.count({ where: { enabled: true } }),
       db.submission.count({ where: { status: 'completed' } }),
       db.transaction.aggregate({
         where: { type: 'earning' },
+        _sum: { amount: true },
+      }),
+      db.withdrawal.count({ where: { status: 'pending' } }),
+      db.withdrawal.aggregate({
+        where: { status: 'approved' },
         _sum: { amount: true },
       }),
     ])
@@ -46,13 +59,23 @@ export async function GET() {
       },
     })
 
+    const recentWithdrawals = await db.withdrawal.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: {
+        user: { select: { id: true, name: true, username: true } },
+      },
+    })
+
     return NextResponse.json({
       stats: {
         totalUsers,
         totalJobs,
         activeJobs,
         totalSubmissions,
-        totalPaid: Number(agg._sum.amount || 0),
+        totalPaid: Number(earningAgg._sum.amount || 0),
+        pendingWithdrawals,
+        totalPaidOut: Number(approvedWithdrawalsAgg._sum.amount || 0),
       },
       recentUsers: recentUsers.map((u) => ({
         ...u,
@@ -63,6 +86,14 @@ export async function GET() {
         ...j,
         reward: Number(j.reward),
         createdAt: j.createdAt.toISOString(),
+      })),
+      recentWithdrawals: recentWithdrawals.map((w) => ({
+        id: w.id,
+        amount: Number(w.amount),
+        method: w.method,
+        status: w.status,
+        createdAt: w.createdAt.toISOString(),
+        user: w.user,
       })),
     })
   } catch (e) {

@@ -112,8 +112,16 @@ export function DashboardView() {
         </div>
 
         {data.featured.length === 0 ? (
-          <Card className="p-6 text-center text-sm text-muted-foreground">
-            {t('noJobsAvailable')}
+          <Card className="p-8 text-center">
+            <div className="size-14 rounded-2xl bg-primary/10 text-primary grid place-items-center mx-auto mb-3">
+              <Briefcase />
+            </div>
+            <p className="font-semibold mb-1">{t('startEarning')}</p>
+            <p className="text-sm text-muted-foreground mb-4">{t('startFirstJob')}</p>
+            <Button size="sm" onClick={() => setView('jobs')}>
+              {t('browseJobs')}
+              <ArrowRight className="size-4" />
+            </Button>
           </Card>
         ) : (
           <div className="space-y-3">

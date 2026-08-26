@@ -27,6 +27,7 @@ model User {
   transactions Transaction[]
   sessions     Session[]
   withdrawals  Withdrawal[]
+  notifications Notification[]
 }
 
 model Job {
@@ -102,4 +103,20 @@ model Withdrawal {
 
   @@index([userId])
   @@index([status])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // earning | withdrawal | system | job
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  link      String?  // optional view to navigate to
+  createdAt DateTime @default(now())
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
 }

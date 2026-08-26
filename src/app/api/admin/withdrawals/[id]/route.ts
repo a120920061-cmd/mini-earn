@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
+import { notify } from '@/lib/notify'
 
 // PATCH — approve or reject a withdrawal
 // body: { status: 'approved' | 'rejected', note?: string }
@@ -55,6 +56,25 @@ export async function PATCH(
     }
 
     const updated = await db.withdrawal.findUnique({ where: { id }, include: { user: { select: { name: true, username: true, email: true } } } })
+
+    // notify the user about the decision
+    if (status === 'approved') {
+      await notify({
+        userId: withdrawal.userId,
+        type: 'withdrawal',
+        title: 'Withdrawal Approved',
+        body: `৳${Number(withdrawal.amount).toFixed(2)} sent to ${withdrawal.method} • ${withdrawal.account}`,
+        link: 'wallet',
+      })
+    } else {
+      await notify({
+        userId: withdrawal.userId,
+        type: 'withdrawal',
+        title: 'Withdrawal Rejected',
+        body: `৳${Number(withdrawal.amount).toFixed(2)} refunded to your balance${note ? ` · ${note}` : ''}`,
+        link: 'wallet',
+      })
+    }
 
     return NextResponse.json({
       ok: true,

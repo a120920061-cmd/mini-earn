@@ -13,6 +13,7 @@ import { JobDetailsView } from '@/components/jobs/job-details-view'
 import { WalletView } from '@/components/wallet/wallet-view'
 import { ProfileView } from '@/components/profile/profile-view'
 import { BottomNav } from '@/components/layout/bottom-nav'
+import { NotificationBell } from '@/components/layout/notification-bell'
 import { Button } from '@/components/ui/button'
 
 const navItems: { key: UserView; tKey: 'home' | 'jobs' | 'wallet' | 'profile'; icon: typeof Home }[] = [
@@ -82,6 +83,7 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
                 {formatMoney(user?.balance || 0, t('taka'), lang)}
               </span>
             </div>
+            <NotificationBell />
             <Button
               variant="ghost"
               size="icon"

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Power, Loader2, Briefcase, Star } from 'lucide-react'
+import { Plus, Pencil, Trash2, Power, Loader2, Briefcase, Star, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -70,6 +70,16 @@ export function AdminJobsManager() {
     if (!res.ok) {
       toast.error('Failed')
       load()
+    }
+  }
+
+  async function cloneJob(job: JobItem) {
+    const res = await api(`/api/jobs/${job.id}/clone`, { method: 'POST' })
+    if (res.ok) {
+      toast.success(t('jobCloned'))
+      load()
+    } else {
+      toast.error('Failed')
     }
   }
 
@@ -160,10 +170,13 @@ export function AdminJobsManager() {
                   <Pencil className="size-3.5" />
                   {t('edit')}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => toggleFeatured(job, !job.featured)}>
+                <Button variant="outline" size="sm" onClick={() => cloneJob(job)} title={t('cloneJob')}>
+                  <Copy className="size-3.5" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => toggleFeatured(job, !job.featured)} title={t('featured')}>
                   <Star className={`size-3.5 ${job.featured ? 'fill-current text-amber-500' : ''}`} />
                 </Button>
-                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteId(job.id)}>
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteId(job.id)} title={t('deleteJob')}>
                   <Trash2 className="size-3.5" />
                 </Button>
               </div>

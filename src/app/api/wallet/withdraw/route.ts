@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
+import { notify } from '@/lib/notify'
 
 const MIN_WITHDRAW = 10
 const METHODS = ['bkash', 'nagad', 'rocket', 'bank']
@@ -56,6 +57,14 @@ export async function POST(req: Request) {
     ])
 
     const updated = await db.user.findUnique({ where: { id: user.id } })
+
+    await notify({
+      userId: user.id,
+      type: 'withdrawal',
+      title: 'Withdrawal Requested',
+      body: `৳${amount.toFixed(2)} via ${method} • ${account}`,
+      link: 'wallet',
+    })
 
     return NextResponse.json({
       ok: true,

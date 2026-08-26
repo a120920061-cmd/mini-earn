@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword, createSession, setSessionCookie, ensureSeed } from '@/lib/auth'
+import { notify } from '@/lib/notify'
 
 export async function POST(req: Request) {
   await ensureSeed()
@@ -38,6 +39,15 @@ export async function POST(req: Request) {
 
     const token = await createSession(user.id)
     await setSessionCookie(token)
+
+    // welcome notification
+    await notify({
+      userId: user.id,
+      type: 'system',
+      title: 'Welcome to Mini Earn!',
+      body: 'Complete jobs to start earning rewards. Visit the Jobs tab to begin.',
+      link: 'jobs',
+    })
 
     return NextResponse.json({
       user: {

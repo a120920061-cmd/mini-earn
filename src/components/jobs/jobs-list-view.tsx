@@ -88,9 +88,12 @@ export function JobsListView() {
 
       {/* list */}
       {filtered.length === 0 ? (
-        <Card className="p-8 text-center">
-          <SearchX className="size-8 mx-auto text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">{t('noJobsAvailable')}</p>
+        <Card className="p-10 text-center">
+          <div className="size-16 rounded-2xl bg-muted grid place-items-center mx-auto mb-4">
+            <SearchX className="size-8 text-muted-foreground" />
+          </div>
+          <p className="font-semibold mb-1">{t('noJobsAvailable')}</p>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">{t('noJobsAvailableDesc')}</p>
         </Card>
       ) : (
         <div className="space-y-3">
