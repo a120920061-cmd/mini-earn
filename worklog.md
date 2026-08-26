@@ -365,3 +365,38 @@ Stage Summary:
 - **Styling**: Password strength meter (3 colored bars + label), activity timeline with type-colored icons, 2-col action grid (adjust balance + reset streak) in user detail.
 - **Architecture**: Change password reuses existing scrypt hashPassword/verifyPassword helpers. Activity feed merges two queries server-side and sorts — simple, no new DB model. Streak reset only zeroes `streak` (preserves `bestStreak` for history). ActivityFeed depends on refreshKey for pull-to-refresh support.
 - **Recommended next steps**: two-factor auth, job proof upload, referral tracking with reward, real-time push via SW, offline job queue, weekly digest email, admin audit log, scheduled job publishing.
+
+---
+Task ID: 11
+Agent: main (Z.ai Code) — recurring web dev review (round 11)
+Task: QA via agent-browser, add completed jobs history, "For You" recommendations, admin quick actions, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean, no errors. Found gap: users who completed all jobs see "0 available" with no way to view their completed job history. Also no personalized recommendations, no admin quick actions.
+- **Completed jobs history** (new feature — view past completions):
+  - API `GET /api/jobs/completed`: returns user's completed submissions with job details + reward + completedAt + proof.
+  - `CompletedJobsView` component: header with count, cards showing green check icon + job title + category badge + description + "অর্জিত: ৳X" (earned) + timeAgo. Skeleton + empty state ("You haven't completed any jobs yet").
+  - Added `completed-jobs` to UserView store type + app-shell router. Added a "Completed Jobs" link in the jobs list header.
+- **"For You" recommendations** (new feature — personalized job discovery):
+  - API `GET /api/jobs/recommendations`: finds user's top categories (by completed-submission count), returns enabled jobs in those categories that the user hasn't completed/favorited. Fallback: top-reward jobs if no completed history.
+  - `ForYouRecommendations` component: card with Sparkles icon + top-category chips, horizontal scroll carousel of recommendation cards (title + description + reward + arrow). Hidden when no recommendations. Responds to refreshKey.
+  - Added to dashboard between the streak card and weekly chart.
+- **Admin quick actions** (new feature — faster admin workflow):
+  - `QuickActions` component: card with Zap icon + 2 buttons — "Quick Add Job" (→ job form) + "Quick Broadcast" (→ opens BroadcastDialog).
+  - Added to admin overview between the stats grid and the dual summary. Wired a local broadcastOpen state + BroadcastDialog instance.
+- **i18n**: added ~15 new keys (completed history, recommendations, quick actions) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- Completed jobs API: returns completed jobs with title/reward/completedAt ✓
+- Recommendations API: topCategories ["visit","social","media"] for test1 + recommendations array; fresh user gets 3 fallback jobs ✓
+- Browser: dashboard forYou present after completing a job ✓
+- Jobs list: "সম্পন্ন কাজ" completed link present → opens CompletedJobsView with "৬ সম্পন্ন কাজ" + cards showing title/category/earned/timeAgo ✓
+- Admin overview: "দ্রুত অ্যাকশন" quick actions present ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-11 features implemented, verified end-to-end, lint clean.
+- **New features**: Completed jobs history (API + view with earned/timeAgo + nav from jobs list), "For You" recommendations (category-based + fallback, horizontal carousel on dashboard), admin quick actions (quick add job + quick broadcast on overview).
+- **Styling**: Completed-job cards with green check + category badges, recommendation carousel with hover lift + arrow + top-category chips, quick action buttons with colored icons.
+- **Architecture**: Recommendations computed from submission history (category frequency) — no new DB model. Fallback ensures fresh users always see recommendations. CompletedJobsView is a separate view (not a filter) because completed jobs have different data (completion date, proof). QuickActions reuses existing editJob store action + BroadcastDialog.
+- **Recommended next steps**: two-factor auth, job proof upload, referral tracking with reward, real-time push via SW, offline job queue, weekly digest email, admin audit log, scheduled job publishing.

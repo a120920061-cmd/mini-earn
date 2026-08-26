@@ -14,6 +14,7 @@ import { WalletView } from '@/components/wallet/wallet-view'
 import { ProfileView } from '@/components/profile/profile-view'
 import { LeaderboardView } from '@/components/leaderboard/leaderboard-view'
 import { SettingsView } from '@/components/settings/settings-view'
+import { CompletedJobsView } from '@/components/jobs/completed-jobs-view'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { PullToRefresh } from '@/components/layout/pull-to-refresh'
 import { OnboardingSheet, useOnboarding } from '@/components/onboarding/onboarding-sheet'
@@ -138,6 +139,7 @@ export function AppShell({ adminBanner = false }: { adminBanner?: boolean }) {
           {view === 'profile' && <ProfileView />}
           {view === 'leaderboard' && <LeaderboardView />}
           {view === 'settings' && <SettingsView />}
+          {view === 'completed-jobs' && <CompletedJobsView />}
         </div>
       </main>
 

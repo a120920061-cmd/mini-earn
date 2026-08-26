@@ -325,6 +325,21 @@ export const dict = {
     resetStreak: 'স্ট্রিক রিসেট',
     resetStreakDesc: 'ইউজারের বর্তমান স্ট্রিক শূন্যে রিসেট করুন',
     streakReset: 'স্ট্রিক রিসেট হয়েছে',
+    // completed jobs
+    completedHistory: 'সম্পন্ন কাজ',
+    completedHistoryDesc: 'আপনার সম্পন্ন কাজের ইতিহাস',
+    noCompletedJobs: 'এখনও কোনো কাজ সম্পন্ন করেননি',
+    completedOn: 'সম্পন্নের তারিখ',
+    earned: 'অর্জিত',
+    // recommendations
+    forYou: 'আপনার জন্য',
+    forYouDesc: 'আপনার পছন্দের ক্যাটাগরির কাজ',
+    noRecommendations: 'এখনও কোনো সুপারিশ নেই',
+    completeMoreJobs: 'আরও কাজ সম্পন্ন করুন পছন্দের ক্যাটাগরি পেতে',
+    // admin quick actions
+    quickActions: 'দ্রুত অ্যাকশন',
+    quickAddJob: 'দ্রুত কাজ যোগ',
+    quickBroadcast: 'দ্রুত বার্তা',
   },
   en: {
     appName: 'Mini Earn',
@@ -641,6 +656,21 @@ export const dict = {
     resetStreak: 'Reset Streak',
     resetStreakDesc: 'Reset the user\'s current streak to zero',
     streakReset: 'Streak reset',
+    // completed jobs
+    completedHistory: 'Completed Jobs',
+    completedHistoryDesc: 'Your completed job history',
+    noCompletedJobs: 'You haven\'t completed any jobs yet',
+    completedOn: 'Completed on',
+    earned: 'Earned',
+    // recommendations
+    forYou: 'For You',
+    forYouDesc: 'Jobs from your favorite categories',
+    noRecommendations: 'No recommendations yet',
+    completeMoreJobs: 'Complete more jobs to get recommendations',
+    // admin quick actions
+    quickActions: 'Quick Actions',
+    quickAddJob: 'Quick Add Job',
+    quickBroadcast: 'Quick Broadcast',
   },
 } as const
 

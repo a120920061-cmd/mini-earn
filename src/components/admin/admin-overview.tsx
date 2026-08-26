@@ -9,6 +9,8 @@ import { useT } from '@/hooks/use-t'
 import { api, formatMoney, formatNumber, timeAgo } from '@/lib/api'
 import { AdminAnalytics } from '@/components/admin/admin-analytics'
 import { ExportButtons } from '@/components/admin/export-buttons'
+import { QuickActions } from '@/components/admin/quick-actions'
+import { BroadcastDialog } from '@/components/admin/broadcast-dialog'
 
 type Stats = {
   totalUsers: number
@@ -34,6 +36,7 @@ export function AdminOverview() {
   const { t, lang } = useT()
   const setAdminView = useAppStore((s) => s.setAdminView)
   const [data, setData] = useState<AdminData | null>(null)
+  const [broadcastOpen, setBroadcastOpen] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -90,6 +93,9 @@ export function AdminOverview() {
           </Card>
         ))}
       </div>
+
+      {/* quick actions */}
+      <QuickActions onBroadcast={() => setBroadcastOpen(true)} />
 
       {/* earnings + withdrawals dual summary */}
       <div className="grid sm:grid-cols-2 gap-3">
@@ -225,6 +231,9 @@ export function AdminOverview() {
           </div>
         )}
       </Card>
+
+      {/* broadcast dialog */}
+      <BroadcastDialog open={broadcastOpen} onOpenChange={setBroadcastOpen} />
     </div>
   )
 }

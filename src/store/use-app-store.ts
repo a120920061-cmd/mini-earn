@@ -10,6 +10,7 @@ export type UserView =
   | 'job-details'
   | 'leaderboard'
   | 'settings'
+  | 'completed-jobs'
 
 export type AdminView = 'admin-overview' | 'admin-jobs' | 'admin-users' | 'admin-job-form' | 'admin-withdrawals' | 'admin-submissions'
 

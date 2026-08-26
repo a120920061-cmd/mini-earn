@@ -12,6 +12,7 @@ import { WeeklyEarningsChart } from '@/components/dashboard/weekly-chart'
 import { TopEarnersPreview } from '@/components/dashboard/top-earners-preview'
 import { StreakCard } from '@/components/dashboard/streak-card'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
+import { ForYouRecommendations } from '@/components/dashboard/for-you-recommendations'
 
 type DashData = {
   user: { name: string; balance: number; totalEarned: number; streak: number; bestStreak: number; lastJobAt: string | null }
@@ -108,6 +109,9 @@ export function DashboardView() {
 
       {/* daily streak */}
       <StreakCard />
+
+      {/* for you recommendations */}
+      <ForYouRecommendations />
 
       {/* weekly earnings chart */}
       <WeeklyEarningsChart />

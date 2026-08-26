@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 export function JobsListView() {
   const { t, lang } = useT()
   const openJob = useAppStore((s) => s.openJob)
+  const setView = useAppStore((s) => s.setView)
   const refreshKey = useAppStore((s) => s.refreshKey)
   const [jobs, setJobs] = useState<JobItem[] | null>(null)
   const [q, setQ] = useState('')
@@ -84,11 +85,19 @@ export function JobsListView() {
 
   return (
     <div className="space-y-4 animate-view-in">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t('jobs')}</h1>
-        <p className="text-sm text-muted-foreground">
-          {formatNumber(jobs.length, lang)} {t('availableJobs').toLowerCase()}
-        </p>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{t('jobs')}</h1>
+          <p className="text-sm text-muted-foreground">
+            {formatNumber(jobs.length, lang)} {t('availableJobs').toLowerCase()}
+          </p>
+        </div>
+        <button
+          onClick={() => setView('completed-jobs')}
+          className="text-xs text-primary font-medium hover:underline shrink-0"
+        >
+          {t('completedHistory')}
+        </button>
       </div>
 
       {/* search + sort */}
