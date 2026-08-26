@@ -185,3 +185,39 @@ Stage Summary:
 - **Styling**: Pulsing flame gradient on streak card when hot, status pills, 7-day progress dots, badge gradient colors + lock states, slide-in drawer with skeleton loading, clickable user cards with chevron.
 - **Architecture**: Streak logic isolated in `src/lib/streak.ts` (pure function, fire-and-forget bonus notification). Badges computed on-demand from existing stats (no DB writes). Admin user stats endpoint reuses computeBadges. All bonus logic is atomic via Prisma $transaction in submit route.
 - **Recommended next steps**: referral tracking (reward referrer on referee's first job), weekly streak reset via cron, badge unlock notifications, streak freeze/restore (one-time grace), leaderboard "near me" view, PWA push notifications, streak leaderboard.
+
+---
+Task ID: 6
+Agent: main (Z.ai Code) — recurring web dev review (round 6)
+Task: QA via agent-browser, fix Bangla numeral bug in wallet, add job favorites, dedicated settings view, and polish styling.
+
+Work Log:
+- QA via agent-browser (mobile 390px): app stable, lint clean. Found bug: wallet completedJobs stat used String() instead of formatNumber → showed "0" instead of "০" in Bangla. Identified gaps: no favorites/bookmarks, settings cluttered in profile, no dedicated settings screen.
+- **Bugfix**: wallet-view.tsx — changed `{data.completedJobs}` to `{formatNumber(data.completedJobs, lang)}` + added formatNumber import. Bangla numeral consistency restored.
+- **Job favorites/bookmarks** (new feature):
+  - Prisma: added `Favorite` model (userId, jobId, unique [userId,jobId]) + relations on User & Job. Ran `db:push`. Bumped db cache to `prisma_v5` + isValidClient checks withdrawal+notification+favorite.
+  - API: `POST /api/jobs/[id]/favorite` (toggle), `GET /api/favorites` (list user's favorited enabled jobs), updated `GET /api/jobs` to attach `favorited` boolean per user.
+  - JobCard: added heart button (top-right) with fill-red animation on favorite, toast feedback, stopPropagation to avoid triggering Start Job.
+  - JobsListView: added "Favorites" filter chip (red when active, shows count badge) + "All" chip + category chips. Empty state switches to heart icon + "Tap the heart icon" message when favOnly filter active.
+- **Dedicated Settings view** (new feature):
+  - `SettingsView` component: back button, header, Appearance section (language toggle + theme switch), Notifications section (clear-notifications button with confirm dialog → mark-all-read), Account Actions section (status badge), Danger Zone section (logout), About card (version + made-with-love).
+  - Added `settings` to UserView store type + app-shell router.
+  - Profile: kept quick language/theme toggles + added a "Settings" link row (Settings icon + ChevronRight) that navigates to the full settings view.
+- **i18n**: added ~25 new keys (favorites, savedJobs, settings, appearance, danger zone, clear notifications, about, version, made-with-love) in Bangla + English.
+
+E2E Verification (curl + agent-browser):
+- Jobs API returns favorited field ✓
+- Favorite toggle: favorited:true → favorites list shows job → unfavorite: favorited:false → list empty ✓
+- Browser: 6 heart buttons on job cards, click works, favorites chip present ("পছন্দের") ✓
+- Profile settings link present ("সেটিংস") → click opens settings view ✓
+- Settings view shows: অ্যাপিয়ারেন্স (ভাষা ও অঞ্চল + থিম), নোটিফিকেশন (নোটিফিকেশন মুছুন), অ্যাকাউন্ট অ্যাকশন (সক্রিয়), ডেঞ্জার জোন ✓
+- Wallet bugfix: completedJobs now uses Bangla numerals ✓
+- Lint: clean (0 errors) ✓; no dev.log errors ✓
+
+Stage Summary:
+- **Status**: All round-6 features implemented, verified end-to-end, lint clean.
+- **New features**: Job favorites/bookmarks (DB + API + heart toggle on cards + favorites filter in jobs list), dedicated Settings view (appearance/notifications/account/danger-zone/about), profile→settings navigation.
+- **Bugfix**: Wallet completedJobs now respects Bangla numerals (০ not 0).
+- **Styling**: Heart fill-red animation on favorite, red favorites filter chip with count badge, settings sections with icon rows + chevrons, about card with heart icon.
+- **Architecture**: Favorites use a unique constraint [userId,jobId] for idempotent toggling. Settings view reuses the existing notifications/read-all endpoint for "clear" semantics (no new delete endpoint needed). The versioned db cache (prisma_v5) prevents stale-client crashes.
+- **Recommended next steps**: referral tracking with reward, streak freeze/restore, notification delete endpoint (real clear vs mark-read), PWA offline + push, job proof upload, admin favorites analytics, weekly digest email.

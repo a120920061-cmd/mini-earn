@@ -9,6 +9,7 @@ export type UserView =
   | 'profile'
   | 'job-details'
   | 'leaderboard'
+  | 'settings'
 
 export type AdminView = 'admin-overview' | 'admin-jobs' | 'admin-users' | 'admin-job-form' | 'admin-withdrawals'
 

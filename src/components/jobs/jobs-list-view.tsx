@@ -1,20 +1,22 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, SearchX, Filter } from 'lucide-react'
+import { Loader2, SearchX, Heart } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { JobCard, type JobItem } from '@/components/jobs/job-card'
 import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
-import { api } from '@/lib/api'
+import { api, formatNumber } from '@/lib/api'
+import { cn } from '@/lib/utils'
 
 export function JobsListView() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const openJob = useAppStore((s) => s.openJob)
   const [jobs, setJobs] = useState<JobItem[] | null>(null)
   const [q, setQ] = useState('')
   const [cat, setCat] = useState<string>('all')
+  const [favOnly, setFavOnly] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -34,8 +36,11 @@ export function JobsListView() {
       !q ||
       j.title.toLowerCase().includes(q.toLowerCase()) ||
       j.description.toLowerCase().includes(q.toLowerCase())
-    return matchesCat && matchesQ
+    const matchesFav = !favOnly || j.favorited
+    return matchesCat && matchesQ && matchesFav
   })
+
+  const favCount = (jobs || []).filter((j) => j.favorited).length
 
   if (jobs === null) {
     return (
@@ -50,7 +55,7 @@ export function JobsListView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t('jobs')}</h1>
         <p className="text-sm text-muted-foreground">
-          {jobs.length} {t('availableJobs').toLowerCase()}
+          {formatNumber(jobs.length, lang)} {t('availableJobs').toLowerCase()}
         </p>
       </div>
 
@@ -72,28 +77,49 @@ export function JobsListView() {
         )}
       </div>
 
-      {/* category chips */}
-      {cats.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
-          <Chip active={cat === 'all'} onClick={() => setCat('all')}>
-            {t('status')}
+      {/* filter chips: favorites + categories */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
+        {/* favorites filter */}
+        <button
+          onClick={() => setFavOnly((f) => !f)}
+          className={cn(
+            'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors border flex items-center gap-1.5',
+            favOnly
+              ? 'bg-red-500 text-white border-red-500'
+              : 'bg-card text-muted-foreground border-border'
+          )}
+        >
+          <Heart className={cn('size-3.5', favOnly && 'fill-current')} />
+          {t('favorites')}
+          {favCount > 0 && (
+            <span className={cn(
+              'text-[9px] font-bold px-1 rounded-full',
+              favOnly ? 'bg-white/25' : 'bg-muted'
+            )}>
+              {formatNumber(favCount, lang)}
+            </span>
+          )}
+        </button>
+        <Chip active={cat === 'all' && !favOnly} onClick={() => { setCat('all'); setFavOnly(false) }}>
+          {t('all')}
+        </Chip>
+        {cats.map((c) => (
+          <Chip key={c} active={cat === c && !favOnly} onClick={() => { setCat(c); setFavOnly(false) }}>
+            {c}
           </Chip>
-          {cats.map((c) => (
-            <Chip key={c} active={cat === c} onClick={() => setCat(c)}>
-              {c}
-            </Chip>
-          ))}
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* list */}
       {filtered.length === 0 ? (
         <Card className="p-10 text-center">
           <div className="size-16 rounded-2xl bg-muted grid place-items-center mx-auto mb-4">
-            <SearchX className="size-8 text-muted-foreground" />
+            {favOnly ? <Heart className="size-8 text-muted-foreground" /> : <SearchX className="size-8 text-muted-foreground" />}
           </div>
-          <p className="font-semibold mb-1">{t('noJobsAvailable')}</p>
-          <p className="text-sm text-muted-foreground max-w-xs mx-auto">{t('noJobsAvailableDesc')}</p>
+          <p className="font-semibold mb-1">{favOnly ? t('noFavorites') : t('noJobsAvailable')}</p>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+            {favOnly ? t('noFavoritesDesc') : t('noJobsAvailableDesc')}
+          </p>
         </Card>
       ) : (
         <div className="space-y-3">

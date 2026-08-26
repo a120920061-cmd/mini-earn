@@ -16,6 +16,7 @@ import {
   ShieldOff,
   Languages,
   Pencil,
+  Settings,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -43,6 +44,7 @@ export function ProfileView() {
   const { t, lang } = useT()
   const user = useAppStore((s) => s.user)
   const setUser = useAppStore((s) => s.setUser)
+  const setView = useAppStore((s) => s.setView)
   const curLang = useAppStore((s) => s.lang)
   const setLang = useAppStore((s) => s.setLang)
   const logoutLocal = useAppStore((s) => s.logoutLocal)
@@ -157,7 +159,7 @@ export function ProfileView() {
       {/* achievements / badges */}
       <BadgesGrid />
 
-      {/* settings */}
+      {/* settings — quick toggles + link to full settings */}
       <div>
         <p className="text-xs font-semibold uppercase text-muted-foreground mb-2 px-1">{t('settings')}</p>
         <Card className="divide-y p-0 overflow-hidden">
@@ -198,6 +200,21 @@ export function ProfileView() {
               aria-label="Toggle theme"
             />
           </div>
+
+          {/* full settings link */}
+          <button
+            onClick={() => setView('settings')}
+            className="flex items-center gap-3 p-4 w-full text-left hover:bg-muted/50 transition-colors"
+          >
+            <div className="size-9 rounded-lg bg-muted grid place-items-center text-muted-foreground">
+              <Settings className="size-4.5" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">{t('settingsTitle')}</p>
+              <p className="text-xs text-muted-foreground">{t('aboutDesc')}</p>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </button>
         </Card>
       </div>
 

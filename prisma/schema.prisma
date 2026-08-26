@@ -31,6 +31,7 @@ model User {
   sessions     Session[]
   withdrawals  Withdrawal[]
   notifications Notification[]
+  favorites    Favorite[]
 }
 
 model Job {
@@ -47,6 +48,7 @@ model Job {
   updatedAt    DateTime @updatedAt
 
   submissions  Submission[]
+  favorites    Favorite[]
 }
 
 model Submission {
@@ -122,4 +124,17 @@ model Notification {
 
   @@index([userId])
   @@index([read])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId])
 }

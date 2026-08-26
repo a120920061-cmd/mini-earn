@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { Briefcase, CheckCircle2, ExternalLink, Globe, Heart, Download, FileText, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useT } from '@/hooks/use-t'
-import { formatMoney } from '@/lib/api'
+import { api, formatMoney } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import type { Lang } from '@/lib/i18n'
 
 export type JobItem = {
@@ -19,6 +21,7 @@ export type JobItem = {
   featured?: boolean
   enabled?: boolean
   completed?: boolean
+  favorited?: boolean
 }
 
 const categoryIcon: Record<string, typeof Globe> = {
@@ -53,6 +56,23 @@ export function JobCard({
   const Icon = categoryIcon[cat] || Briefcase
   const color = categoryColor[cat] || categoryColor.general
   const done = job.completed
+  const [favorited, setFavorited] = useState(!!job.favorited)
+  const [toggling, setToggling] = useState(false)
+
+  async function toggleFavorite(e: React.MouseEvent) {
+    e.stopPropagation()
+    e.preventDefault()
+    if (toggling) return
+    setToggling(true)
+    const res = await api<{ favorited?: boolean }>(`/api/jobs/${job.id}/favorite`, {
+      method: 'POST',
+    })
+    setToggling(false)
+    if (res.ok && res.data) {
+      setFavorited(!!res.data.favorited)
+      toast.success(res.data.favorited ? t('addedToFavorites') : t('removedFromFavorites'))
+    }
+  }
 
   return (
     <div
@@ -68,11 +88,30 @@ export function JobCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold leading-tight line-clamp-1">{job.title}</h3>
-            {job.featured && !compact && (
-              <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0 h-5">
-                {t('featured')}
-              </Badge>
-            )}
+            <div className="flex items-center gap-1 shrink-0">
+              {job.featured && !compact && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+                  {t('featured')}
+                </Badge>
+              )}
+              {/* favorite heart */}
+              <button
+                onClick={toggleFavorite}
+                disabled={toggling}
+                aria-label={t('favorites')}
+                className={cn(
+                  'size-7 rounded-full grid place-items-center transition-all hover:bg-muted',
+                  toggling && 'opacity-50'
+                )}
+              >
+                <Heart
+                  className={cn(
+                    'size-4 transition-all',
+                    favorited ? 'fill-red-500 text-red-500 scale-110' : 'text-muted-foreground hover:text-red-500'
+                  )}
+                />
+              </button>
+            </div>
           </div>
           {!compact && (
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{job.description}</p>

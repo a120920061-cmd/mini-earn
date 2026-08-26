@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 // Use a versioned cache key so that when the Prisma schema changes (e.g. a new
 // model or field is added) and `prisma generate` runs, the dev server picks up a
 // fresh client instance instead of reusing a stale one that predates the change.
-const CACHE_KEY = 'prisma_v4'
+const CACHE_KEY = 'prisma_v5'
 
 const globalForPrisma = globalThis as unknown as Record<string, PrismaClient | undefined>
 
@@ -11,6 +11,7 @@ const globalForPrisma = globalThis as unknown as Record<string, PrismaClient | u
 function isValidClient(c: PrismaClient): boolean {
   return typeof (c as unknown as { withdrawal?: unknown }).withdrawal !== 'undefined'
     && typeof (c as unknown as { notification?: unknown }).notification !== 'undefined'
+    && typeof (c as unknown as { favorite?: unknown }).favorite !== 'undefined'
 }
 
 let db: PrismaClient

@@ -16,14 +16,22 @@ export async function GET(req: Request) {
       orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
     })
 
-    // for regular users, attach completion status
+    // for regular users, attach completion + favorite status
     let completed: string[] = []
+    let favorited: string[] = []
     if (user && !user.isAdmin) {
-      const subs = await db.submission.findMany({
-        where: { userId: user.id, status: 'completed' },
-        select: { jobId: true },
-      })
+      const [subs, favs] = await Promise.all([
+        db.submission.findMany({
+          where: { userId: user.id, status: 'completed' },
+          select: { jobId: true },
+        }),
+        db.favorite.findMany({
+          where: { userId: user.id },
+          select: { jobId: true },
+        }),
+      ])
       completed = subs.map((s) => s.jobId)
+      favorited = favs.map((f) => f.jobId)
     }
 
     return NextResponse.json({
@@ -31,6 +39,7 @@ export async function GET(req: Request) {
         ...j,
         reward: Number(j.reward),
         completed: completed.includes(j.id),
+        favorited: favorited.includes(j.id),
       })),
     })
   } catch (e) {

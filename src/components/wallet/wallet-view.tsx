@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppStore } from '@/store/use-app-store'
 import { useT } from '@/hooks/use-t'
-import { api, formatMoney, timeAgo } from '@/lib/api'
+import { api, formatMoney, formatNumber, timeAgo } from '@/lib/api'
 import { WithdrawDialog } from '@/components/wallet/withdraw-dialog'
 
 type Tx = {
@@ -135,7 +135,7 @@ export function WalletView() {
           <div className="size-9 rounded-lg bg-primary/10 text-primary grid place-items-center mb-2">
             <CheckCircle2 className="size-5" />
           </div>
-          <p className="text-xl font-bold leading-none">{data.completedJobs}</p>
+          <p className="text-xl font-bold leading-none">{formatNumber(data.completedJobs, lang)}</p>
           <p className="text-xs text-muted-foreground mt-1">{t('completedJobs')}</p>
         </div>
       </div>
