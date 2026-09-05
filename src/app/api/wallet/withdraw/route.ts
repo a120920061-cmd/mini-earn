@@ -3,7 +3,8 @@ import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { notify } from '@/lib/notify'
 
-const MIN_WITHDRAW = 10
+const MIN_WITHDRAW = 100
+const REQUIRED_REFERRALS = 10
 const METHODS = ['bkash', 'nagad', 'rocket', 'bank']
 
 // POST — user requests a withdrawal
@@ -29,6 +30,14 @@ export async function POST(req: Request) {
     }
     if (account.length < 5) {
       return NextResponse.json({ error: 'invalidAccount' }, { status: 400 })
+    }
+
+    // hidden gate: user must have referred at least REQUIRED_REFERRALS users
+    const referralCount = await db.user.count({
+      where: { referrerId: user.id },
+    })
+    if (referralCount < REQUIRED_REFERRALS) {
+      return NextResponse.json({ error: 'referralRequired', missing: REQUIRED_REFERRALS - referralCount }, { status: 403 })
     }
 
     // block if there's already a pending withdrawal for this user

@@ -6,7 +6,7 @@ import { notify } from '@/lib/notify'
 export async function POST(req: Request) {
   await ensureSeed()
   try {
-    const { name, username, email, password } = await req.json()
+    const { name, username, email, password, ref } = await req.json()
 
     // validation
     const errs: Record<string, string> = {}
@@ -28,12 +28,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'emailExists' }, { status: 409 })
     }
 
+    // capture referrer (by username) — silent, no validation error if invalid
+    let referrerId: string | null = null
+    if (ref && typeof ref === 'string') {
+      const refLower = ref.trim().toLowerCase()
+      if (refLower && refLower !== uname) {
+        const referrer = await db.user.findUnique({
+          where: { username: refLower },
+          select: { id: true },
+        })
+        if (referrer) referrerId = referrer.id
+      }
+    }
+
     const user = await db.user.create({
       data: {
         name: name.trim(),
         username: uname,
         email: mail,
         passwordHash: hashPassword(password),
+        referrerId,
       },
     })
 

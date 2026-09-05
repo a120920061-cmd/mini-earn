@@ -52,7 +52,7 @@ export function WithdrawDialog({
   function validate(): boolean {
     const e: Record<string, string> = {}
     const amt = Number(amount)
-    if (!Number.isFinite(amt) || amt < 10) e.amount = d.minWithdraw
+    if (!Number.isFinite(amt) || amt < 100) e.amount = d.minWithdraw
     if (amt > balance) e.amount = d.insufficientBalance
     if (account.trim().length < 5) e.account = d.invalidAccount
     setErr(e)
@@ -72,6 +72,11 @@ export function WithdrawDialog({
       const key = (res.data?.error || 'server_error') as keyof typeof dict['en']
       if (key === 'minWithdraw' || key === 'insufficientBalance' || key === 'invalidAccount') {
         setErr({ ...(key === 'account' ? { account: d[key] } : { amount: d[key] }) })
+      } else if (key === 'referralRequired') {
+        // hidden gate revealed only at withdrawal time
+        const missing = (res.data as any)?.missing ?? 10
+        toast.error(curLang === 'bn' ? `উত্তোলনের জন্য আরও ${missing} জনকে রেফার করতে হবে` : `Refer ${missing} more users to withdraw`)
+        onOpenChange(false)
       } else {
         toast.error(d[key] || res.error || 'Error')
       }
@@ -119,10 +124,10 @@ export function WithdrawDialog({
               <Input
                 type="number"
                 step="0.01"
-                min="10"
+                min="100"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="10"
+                placeholder="100"
                 className="h-11 pl-7"
               />
             </div>

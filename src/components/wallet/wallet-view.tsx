@@ -94,7 +94,7 @@ export function WalletView() {
           size="sm"
           className="h-9"
           onClick={() => setShowWithdraw(true)}
-          disabled={data.balance < 10}
+          disabled={data.balance < 100}
         >
           <ArrowDownToLine className="size-4" />
           {t('withdraw')}
@@ -115,7 +115,7 @@ export function WalletView() {
             size="sm"
             className="mt-3 bg-white/15 hover:bg-white/25 text-primary-foreground border-0"
             onClick={() => setShowWithdraw(true)}
-            disabled={data.balance < 10}
+            disabled={data.balance < 100}
           >
             <ArrowDownToLine className="size-4" />
             {t('withdrawMoney')}

@@ -23,6 +23,7 @@ model User {
   streak       Int      @default(0)
   bestStreak   Int      @default(0)
   lastJobAt    DateTime?
+  referrerId   String?  // who referred this user (username stored for simplicity)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

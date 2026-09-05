@@ -54,10 +54,14 @@ export function AuthScreen() {
     setLoading(true)
     setErrors({})
     const path = mode === 'login' ? '/api/auth/login' : '/api/auth/register'
+    // capture ref from URL (?ref=username) for referral tracking
+    const refParam = typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('ref')
+      : null
     const body =
       mode === 'login'
         ? { identifier: identifier.trim(), password }
-        : { name: name.trim(), username: username.trim(), email: email.trim(), password }
+        : { name: name.trim(), username: username.trim(), email: email.trim(), password, ...(refParam ? { ref: refParam } : {}) }
     const res = await api<{ user?: any; error?: string; fields?: Record<string, string> }>(path, {
       method: 'POST',
       body: JSON.stringify(body),
