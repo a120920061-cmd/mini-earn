@@ -11,18 +11,26 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}))
 
+    const hasToken = !!process.env.TELEGRAM_BOT_TOKEN
+    console.log('[TG API] hasToken:', hasToken, 'tokenPreview:', process.env.TELEGRAM_BOT_TOKEN?.slice(0, 15))
+
     let tgUser: TelegramUserData | null = null
 
     // Flow 1: Telegram Mini App initData
     if (body.initData && typeof body.initData === 'string') {
+      console.log('[TG API] Flow 1: initData verification, length:', body.initData.length)
       tgUser = verifyTelegramInitData(body.initData)
+      console.log('[TG API] initData verify result:', tgUser ? 'OK' : 'FAILED')
     }
     // Flow 2: Telegram Login Widget callback data
     else if (body.widgetData && typeof body.widgetData === 'object') {
+      console.log('[TG API] Flow 2: widgetData verification, keys:', Object.keys(body.widgetData))
       tgUser = verifyTelegramLoginWidget(body.widgetData)
+      console.log('[TG API] widgetData verify result:', tgUser ? 'OK' : 'FAILED')
     }
 
     if (!tgUser) {
+      console.log('[TG API] verification failed — returning 401')
       return NextResponse.json({ error: 'invalid_telegram_auth' }, { status: 401 })
     }
 

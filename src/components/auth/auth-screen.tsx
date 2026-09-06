@@ -38,16 +38,20 @@ export function AuthScreen() {
   // ---- Telegram login functions ----
   async function loginWithTelegram(initData: string) {
     setTgLoading(true)
+    console.log('[TG] initData length:', initData?.length, 'preview:', initData?.slice(0, 60))
     const res = await api<{ user?: any; error?: string }>('/api/auth/telegram', {
       method: 'POST',
       body: JSON.stringify({ initData }),
     })
     setTgLoading(false)
+    console.log('[TG] response:', res)
     if (res.ok && res.data?.user) {
       setUser(res.data.user)
       toast.success(curLang === 'bn' ? 'Telegram দিয়ে লগইন সফল' : 'Telegram login successful')
     } else {
-      toast.error(curLang === 'bn' ? 'Telegram লগইন ব্যর্থ' : 'Telegram login failed')
+      const errMsg = res.data?.error || res.error || 'unknown'
+      console.error('[TG] login failed:', errMsg)
+      toast.error(`Telegram login failed: ${errMsg}`)
     }
   }
 
