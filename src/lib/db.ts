@@ -3,17 +3,14 @@ import { PrismaLibSql } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 
 /**
- * Database client setup.
+ * Database client setup for Turso (libsql) + local SQLite.
  *
- * Supports BOTH local SQLite (file:) and Turso (libsql:) via the Prisma
- * libsql driver adapter. The connection string comes from DATABASE_URL;
- * if TURSO_AUTH_TOKEN is set it is used for Turso authentication.
- *
- * IMPORTANT: env vars are read lazily inside createPrismaClient() so that
- * Next.js runtime env (Vercel) is respected, not build-time inlined values.
+ * Uses the @prisma/adapter-libsql driver adapter. The datasource URL in
+ * prisma/schema.prisma is a placeholder (file:) — the REAL connection is
+ * made here via the libsql client using process.env.DATABASE_URL.
  */
 
-const CACHE_KEY = 'prisma_v8'
+const CACHE_KEY = 'prisma_v9'
 
 const globalForPrisma = globalThis as unknown as Record<string, PrismaClient | undefined>
 
@@ -24,8 +21,6 @@ function isValidClient(c: PrismaClient): boolean {
 }
 
 function createPrismaClient(): PrismaClient {
-  // Read env vars LAZILY at call time (not module-load time) so Vercel
-  // runtime env vars are used instead of build-time inlined values.
   const databaseUrl = process.env.DATABASE_URL
     || process.env.DIRECT_DATABASE_URL
     || 'file:./db/custom.db'
@@ -35,11 +30,19 @@ function createPrismaClient(): PrismaClient {
   if (databaseUrl.startsWith('libsql://')) {
     const libsql = createClient({ url: databaseUrl, authToken })
     const adapter = new PrismaLibSql(libsql)
-    return new PrismaClient({ adapter } as any)
+    // Pass the adapter AND datasourceUrl so Prisma doesn't try to read
+    // the placeholder from schema.prisma at runtime.
+    return new PrismaClient({
+      adapter,
+      datasourceUrl: databaseUrl,
+    } as any)
   }
 
-  // Local SQLite (file:) → standard Prisma client, no adapter needed
-  return new PrismaClient({ log: process.env.NODE_ENV !== 'production' ? ['query'] : [] })
+  // Local SQLite (file:) → standard Prisma client
+  return new PrismaClient({
+    log: process.env.NODE_ENV !== 'production' ? ['query'] : [],
+    datasourceUrl: databaseUrl,
+  })
 }
 
 let db: PrismaClient
