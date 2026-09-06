@@ -2,7 +2,8 @@
 // SQLite datasource (see .env DATABASE_URL)
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
