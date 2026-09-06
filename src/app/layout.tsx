@@ -58,6 +58,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="bn" suppressHydrationWarning>
+      <head>
+        {/* Telegram Mini App SDK */}
+        <script src="https://telegram.org/js/telegram-web-app.js" async />
+      </head>
       <body
         className={`${inter.variable} ${notoBn.variable} font-sans antialiased bg-background text-foreground`}
       >

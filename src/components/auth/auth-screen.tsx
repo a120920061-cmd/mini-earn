@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Wallet, Globe, Sun, Moon, Eye, EyeOff, TrendingUp, Loader2 } from 'lucide-react'
+import { Wallet, Globe, Sun, Moon, Eye, EyeOff, TrendingUp, Loader2, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,6 +22,7 @@ export function AuthScreen() {
   const [mode, setMode] = useState<Mode>('login')
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [tgLoading, setTgLoading] = useState(false)
 
   // login fields
   const [identifier, setIdentifier] = useState('')
@@ -33,6 +34,62 @@ export function AuthScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const d = dict[curLang]
+
+  // ---- Telegram login functions ----
+  async function loginWithTelegram(initData: string) {
+    setTgLoading(true)
+    const res = await api<{ user?: any; error?: string }>('/api/auth/telegram', {
+      method: 'POST',
+      body: JSON.stringify({ initData }),
+    })
+    setTgLoading(false)
+    if (res.ok && res.data?.user) {
+      setUser(res.data.user)
+      toast.success(curLang === 'bn' ? 'Telegram দিয়ে লগইন সফল' : 'Telegram login successful')
+    } else {
+      toast.error(curLang === 'bn' ? 'Telegram লগইন ব্যর্থ' : 'Telegram login failed')
+    }
+  }
+
+  async function loginWithWidget(userData: any) {
+    setTgLoading(true)
+    const res = await api<{ user?: any; error?: string }>('/api/auth/telegram', {
+      method: 'POST',
+      body: JSON.stringify({ widgetData: userData }),
+    })
+    setTgLoading(false)
+    if (res.ok && res.data?.user) {
+      setUser(res.data.user)
+      toast.success(curLang === 'bn' ? 'Telegram দিয়ে লগইন সফল' : 'Telegram login successful')
+    } else {
+      toast.error(curLang === 'bn' ? 'Telegram লগইন ব্যর্থ' : 'Telegram login failed')
+    }
+  }
+
+  // Telegram Mini App auto-login: if opened inside Telegram, grab initData
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      const tg = (window as any).Telegram?.WebApp
+      if (!tg || cancelled) return
+      tg.ready()
+      tg.expand()
+      const initData = tg.initData
+      if (initData && initData.length > 10 && !cancelled) {
+        await loginWithTelegram(initData)
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [])
+
+  // Telegram Login Widget callback (global function)
+  useEffect(() => {
+    ;(window as any).onTelegramAuth = (user: any) => {
+      loginWithWidget(user)
+    }
+    return () => { delete (window as any).onTelegramAuth }
+  }, [])
 
   function validate(): boolean {
     const e: Record<string, string> = {}
@@ -217,10 +274,61 @@ export function AuthScreen() {
                 </div>
               </Field>
 
-              <Button type="submit" size="lg" className="w-full h-12 text-base" disabled={loading}>
+              <Button type="submit" size="lg" className="w-full h-12 text-base" disabled={loading || tgLoading}>
                 {loading ? <Loader2 className="size-5 animate-spin" /> : mode === 'login' ? t('login') : t('register')}
               </Button>
             </form>
+
+            {/* Telegram login divider + button */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  {curLang === 'bn' ? 'অথবা' : 'or'}
+                </span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 text-base gap-2 border-[#2AABEE] text-[#2AABEE] hover:bg-[#2AABEE]/10"
+              disabled={tgLoading}
+              onClick={() => {
+                // If inside Telegram Mini App, use initData
+                const tg = (window as any).Telegram?.WebApp
+                if (tg?.initData) {
+                  loginWithTelegram(tg.initData)
+                } else {
+                  // Load Telegram Login Widget script
+                  const existing = document.getElementById('tg-login-script')
+                  if (existing) return
+                  const s = document.createElement('script')
+                  s.id = 'tg-login-script'
+                  s.async = true
+                  s.src = 'https://telegram.org/js/telegram-widget.js?22'
+                  s.setAttribute('data-telegram-login', process.env.NEXT_PUBLIC_TG_BOT_USERNAME || 'mini_earn_bot')
+                  s.setAttribute('data-size', 'large')
+                  s.setAttribute('data-radius', '12')
+                  s.setAttribute('data-onauth', 'onTelegramAuth(user)')
+                  s.setAttribute('data-request-access', 'write')
+                  const container = document.getElementById('tg-widget-container')
+                  if (container) container.appendChild(s)
+                }
+              }}
+            >
+              {tgLoading ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <Send className="size-5" />
+              )}
+              {curLang === 'bn' ? 'Telegram দিয়ে লগইন' : 'Login with Telegram'}
+            </Button>
+
+            {/* Telegram Login Widget container (hidden, widget renders here) */}
+            <div id="tg-widget-container" className="hidden" />
 
             {/* switch mode */}
             <div className="text-center text-sm text-muted-foreground mt-4">
