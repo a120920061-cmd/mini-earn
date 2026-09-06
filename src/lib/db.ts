@@ -5,12 +5,13 @@ import { createClient } from '@libsql/client'
 /**
  * Database client setup for Turso (libsql) + local SQLite.
  *
- * Uses @prisma/adapter-libsql v6.x (matching @prisma/client v6.x).
- * The adapter handles the connection — Prisma's schema datasource URL
- * is only used by the Prisma CLI for migrations, not at runtime.
+ * IMPORTANT: Prisma 6.x reads the datasource URL from the inline schema
+ * at runtime. On Vercel, env("DATABASE_URL") gets inlined as undefined
+ * at build time. To fix this, we use the driver adapter which bypasses
+ * Prisma's internal datasource resolution entirely.
  */
 
-const CACHE_KEY = 'prisma_v11'
+const CACHE_KEY = 'prisma_v12'
 
 const globalForPrisma = globalThis as unknown as Record<string, PrismaClient | undefined>
 
@@ -21,6 +22,7 @@ function isValidClient(c: PrismaClient): boolean {
 }
 
 function createPrismaClient(): PrismaClient {
+  // Read env vars — these come from Vercel runtime env (not build-time)
   const databaseUrl = process.env.DATABASE_URL || 'file:./db/custom.db'
   const authToken = process.env.TURSO_AUTH_TOKEN || undefined
 
