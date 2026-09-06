@@ -8,9 +8,11 @@ import { createHmac } from 'crypto'
  * 2. Telegram Login Widget — verifies callback `hash` using the same method
  *
  * The bot token is read from TELEGRAM_BOT_TOKEN env var.
+ * Format: "bot_id:bot_secret" (e.g. "8680974217:XG2_ezkfPIz...")
  */
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
+const BOT_ID = process.env.NEXT_PUBLIC_TG_BOT_ID || BOT_TOKEN.split(':')[0] || ''
 
 /**
  * Verify Telegram Mini App initData string.
@@ -36,7 +38,7 @@ export function verifyTelegramInitData(initData: string): TelegramUserData | nul
       .map((key) => `${key}=${params.get(key)}`)
       .join('\n')
 
-    // Create secret key: HMAC-SHA256 of bot token with "WebAppData" as key
+    // Create secret key: HMAC-SHA256 with "WebAppData" as key, bot_token as data
     const secretKey = createHmac('sha256', 'WebAppData')
       .update(BOT_TOKEN)
       .digest()
@@ -83,9 +85,10 @@ export function verifyTelegramLoginWidget(data: Record<string, string>): Telegra
       .map((key) => `${key}=${rest[key]}`)
       .join('\n')
 
-    // Create secret key: HMAC-SHA256 of bot token with empty string as data
-    const secretKey = createHmac('sha256', '')
-      .update(BOT_TOKEN)
+    // Create secret key: HMAC-SHA256 with bot_token as KEY, empty string as data
+    // (FIXED: was swapped — key was empty, data was token)
+    const secretKey = createHmac('sha256', BOT_TOKEN)
+      .update('')
       .digest()
 
     // Compute HMAC-SHA256 of data-check-string using the secret key
@@ -106,6 +109,10 @@ export function verifyTelegramLoginWidget(data: Record<string, string>): Telegra
   } catch {
     return null
   }
+}
+
+export function getBotId(): string {
+  return BOT_ID
 }
 
 export type TelegramUserData = {
