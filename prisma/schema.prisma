@@ -6,10 +6,13 @@ generator client {
   previewFeatures = ["driverAdapters"]
 }
 
+// NOTE: When using the libsql driver adapter, Prisma does NOT use this URL
+// at runtime. We use a placeholder file: URL so Prisma CLI validation
+// passes during `prisma generate` on Vercel. The actual DB connection is
+// configured in src/lib/db.ts via the @prisma/adapter-libsql.
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_DATABASE_URL")
+  url      = "file:./db/custom.db"
 }
 
 model User {
