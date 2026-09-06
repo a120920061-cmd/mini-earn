@@ -3,55 +3,47 @@ import { createHmac } from 'crypto'
 /**
  * Telegram authentication utilities.
  *
- * Supports TWO auth flows:
- * 1. Telegram Mini App (TMA) — verifies `initData` string using HMAC-SHA256
- * 2. Telegram Login Widget — verifies callback `hash` using the same method
+ * Uses BotFather-provided client_id + client_secret for Telegram OAuth.
+ * The "bot token" is actually "client_id:client_secret" format.
  *
- * The bot token is read from TELEGRAM_BOT_TOKEN env var.
- * Format: "bot_id:bot_secret" (e.g. "8680974217:XG2_ezkfPIz...")
+ * Supports TWO auth flows:
+ * 1. Telegram Mini App (TMA) — verifies `initData` using HMAC-SHA256
+ * 2. Telegram Login Widget — verifies callback `hash` using HMAC-SHA256
  */
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
-const BOT_ID = process.env.NEXT_PUBLIC_TG_BOT_ID || BOT_TOKEN.split(':')[0] || ''
+const CLIENT_ID = process.env.NEXT_PUBLIC_TG_BOT_ID || BOT_TOKEN.split(':')[0] || ''
+const BOT_USERNAME = process.env.NEXT_PUBLIC_TG_BOT_USERNAME || ''
 
 /**
  * Verify Telegram Mini App initData string.
- * Returns the parsed user data if valid, null otherwise.
- *
  * @see https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
  */
 export function verifyTelegramInitData(initData: string): TelegramUserData | null {
   if (!BOT_TOKEN || !initData) return null
 
   try {
-    // Parse the initData query string
     const params = new URLSearchParams(initData)
     const hash = params.get('hash')
     if (!hash) return null
 
-    // Remove hash from params, build data-check-string
     params.delete('hash')
 
-    // Sort keys alphabetically and build the data-check-string
     const sortedKeys = Array.from(params.keys()).sort()
     const dataCheckString = sortedKeys
       .map((key) => `${key}=${params.get(key)}`)
       .join('\n')
 
-    // Create secret key: HMAC-SHA256 with "WebAppData" as key, bot_token as data
     const secretKey = createHmac('sha256', 'WebAppData')
       .update(BOT_TOKEN)
       .digest()
 
-    // Compute HMAC-SHA256 of data-check-string using the secret key
     const computedHash = createHmac('sha256', secretKey)
       .update(dataCheckString)
       .digest('hex')
 
-    // Compare hashes
     if (computedHash !== hash) return null
 
-    // Parse user data
     const userJson = params.get('user')
     if (!userJson) return null
     const user = JSON.parse(userJson)
@@ -79,19 +71,16 @@ export function verifyTelegramLoginWidget(data: Record<string, string>): Telegra
   try {
     const { hash, ...rest } = data
 
-    // Sort keys alphabetically and build the data-check-string
     const sortedKeys = Object.keys(rest).sort()
     const dataCheckString = sortedKeys
       .map((key) => `${key}=${rest[key]}`)
       .join('\n')
 
-    // Create secret key: HMAC-SHA256 with bot_token as KEY, empty string as data
-    // (FIXED: was swapped — key was empty, data was token)
+    // Secret key: HMAC-SHA256 with bot_token as KEY, empty string as data
     const secretKey = createHmac('sha256', BOT_TOKEN)
       .update('')
       .digest()
 
-    // Compute HMAC-SHA256 of data-check-string using the secret key
     const computedHash = createHmac('sha256', secretKey)
       .update(dataCheckString)
       .digest('hex')
@@ -112,7 +101,11 @@ export function verifyTelegramLoginWidget(data: Record<string, string>): Telegra
 }
 
 export function getBotId(): string {
-  return BOT_ID
+  return CLIENT_ID
+}
+
+export function getBotUsername(): string {
+  return BOT_USERNAME
 }
 
 export type TelegramUserData = {

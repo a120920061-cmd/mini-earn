@@ -302,20 +302,11 @@ export function AuthScreen() {
                 if (tg?.initData) {
                   loginWithTelegram(tg.initData)
                 } else {
-                  // Load Telegram Login Widget script
-                  const existing = document.getElementById('tg-login-script')
-                  if (existing) return
-                  const s = document.createElement('script')
-                  s.id = 'tg-login-script'
-                  s.async = true
-                  s.src = 'https://telegram.org/js/telegram-widget.js?22'
-                  s.setAttribute('data-telegram-login', process.env.NEXT_PUBLIC_TG_BOT_USERNAME || 'mini_earn_bot')
-                  s.setAttribute('data-size', 'large')
-                  s.setAttribute('data-radius', '12')
-                  s.setAttribute('data-onauth', 'onTelegramAuth(user)')
-                  s.setAttribute('data-request-access', 'write')
-                  const container = document.getElementById('tg-widget-container')
-                  if (container) container.appendChild(s)
+                  // Redirect to Telegram OAuth (works with bot_id, no username needed)
+                  const botId = process.env.NEXT_PUBLIC_TG_BOT_ID || '8680974217'
+                  const origin = window.location.origin
+                  const callbackUrl = `${origin}/api/auth/telegram/callback`
+                  window.location.href = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${encodeURIComponent(origin)}&request_access=write&return_to=${encodeURIComponent(callbackUrl)}`
                 }
               }}
             >
