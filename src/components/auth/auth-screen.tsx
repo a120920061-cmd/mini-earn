@@ -302,11 +302,11 @@ export function AuthScreen() {
                 if (tg?.initData) {
                   loginWithTelegram(tg.initData)
                 } else {
-                  // Redirect to Telegram OAuth (works with bot_id, no username needed)
+                  // Redirect to Telegram OAuth
+                  // return_to must match the Redirect URI in BotFather (https://mini-earn.vercel.app/)
                   const botId = process.env.NEXT_PUBLIC_TG_BOT_ID || '8680974217'
                   const origin = window.location.origin
-                  const callbackUrl = `${origin}/api/auth/telegram/callback`
-                  window.location.href = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${encodeURIComponent(origin)}&request_access=write&return_to=${encodeURIComponent(callbackUrl)}`
+                  window.location.href = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${encodeURIComponent(origin)}&request_access=write&return_to=${encodeURIComponent(origin + '/')}`
                 }
               }}
             >

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Wallet } from 'lucide-react'
 import { useAppStore } from '@/store/use-app-store'
 import { api } from '@/lib/api'
+import { toast } from 'sonner'
 import { AuthScreen } from '@/components/auth/auth-screen'
 import { AppShell } from '@/components/layout/app-shell'
 import { AdminPanel } from '@/components/admin/admin-panel'
@@ -18,6 +19,39 @@ export default function Home() {
   useEffect(() => {
     let alive = true
     ;(async () => {
+      // Check for Telegram OAuth callback (query params on root URL)
+      const url = new URL(window.location.href)
+      const hashParam = url.searchParams.get('hash')
+      const tgId = url.searchParams.get('id')
+
+      if (hashParam && tgId) {
+        // Telegram OAuth redirect — send all params to backend for verification
+        const widgetData: Record<string, string> = {}
+        url.searchParams.forEach((value, key) => {
+          widgetData[key] = value
+        })
+
+        setAuthLoading(true)
+        const res = await api<{ user?: any; error?: string }>('/api/auth/telegram', {
+          method: 'POST',
+          body: JSON.stringify({ widgetData }),
+        })
+        if (!alive) return
+
+        if (res.ok && res.data?.user) {
+          setUser(res.data.user)
+          toast.success('Telegram login successful')
+        } else {
+          toast.error('Telegram login failed')
+        }
+
+        // Clean URL (remove query params)
+        window.history.replaceState({}, document.title, '/')
+        setAuthLoading(false)
+        return
+      }
+
+      // Normal auth check
       setAuthLoading(true)
       const res = await api<{ user: any }>('/api/auth/me')
       if (!alive) return
