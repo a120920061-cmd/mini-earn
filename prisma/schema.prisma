@@ -6,9 +6,12 @@ generator client {
   previewFeatures = ["driverAdapters"]
 }
 
+// When using the driver adapter, Prisma does NOT use this URL at runtime —
+// the adapter handles the connection. We hardcode a placeholder file: URL
+// so Prisma CLI validation passes during `prisma generate` on Vercel.
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./db/placeholder.db"
 }
 
 model User {
