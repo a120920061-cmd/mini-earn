@@ -8,9 +8,12 @@ import { createClient } from '@libsql/client'
  * Supports BOTH local SQLite (file:) and Turso (libsql:) via the Prisma
  * libsql driver adapter. The connection string comes from DATABASE_URL;
  * if TURSO_AUTH_TOKEN is set it is used for Turso authentication.
+ *
+ * IMPORTANT: env vars are read lazily inside createPrismaClient() so that
+ * Next.js runtime env (Vercel) is respected, not build-time inlined values.
  */
 
-const CACHE_KEY = 'prisma_v7'
+const CACHE_KEY = 'prisma_v8'
 
 const globalForPrisma = globalThis as unknown as Record<string, PrismaClient | undefined>
 
@@ -21,10 +24,14 @@ function isValidClient(c: PrismaClient): boolean {
 }
 
 function createPrismaClient(): PrismaClient {
-  const databaseUrl = process.env.DATABASE_URL || 'file:./db/custom.db'
+  // Read env vars LAZILY at call time (not module-load time) so Vercel
+  // runtime env vars are used instead of build-time inlined values.
+  const databaseUrl = process.env.DATABASE_URL
+    || process.env.DIRECT_DATABASE_URL
+    || 'file:./db/custom.db'
   const authToken = process.env.TURSO_AUTH_TOKEN || undefined
 
-  // Turso (libsql://) → use the libsql adapter
+  // Turso (libsql://) → use the libsql driver adapter
   if (databaseUrl.startsWith('libsql://')) {
     const libsql = createClient({ url: databaseUrl, authToken })
     const adapter = new PrismaLibSql(libsql)
